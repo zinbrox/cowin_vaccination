@@ -21,7 +21,9 @@ class DistrictAvailability{
   int pincode, lat, long;
   int availableCapacity, minAgeLimit;
   String vaccine, fee, feeType, timeFrom, timeTo;
-  List<String> slots;
+  List<dynamic> slots;
+  DistrictAvailability({this.centerId, this.centerName, this.centerAddress, this.blockName, this.stateName, this.districtName, this.pincode, this.lat,
+  this.long, this.availableCapacity, this.minAgeLimit, this.vaccine, this.fee, this.feeType, this.timeFrom, this.timeTo, this.slots});
 }
 
 class Home extends StatefulWidget {
@@ -32,11 +34,11 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<States> states = [];
   List<Districts> districts = [];
-  List<DistrictAvailability> districtAvailability = [];
+  List<DistrictAvailability> districtAvailabilities = [];
 
   bool _loadingStates = true;
-  String _value1;
-  int selectedState;
+  String _value1, _value2;
+  int selectedState, selectedDistrict;
 
   Future<void> getStates() async {
     print("In getStates");
@@ -71,6 +73,42 @@ class _HomeState extends State<Home> {
       );
       districts.add(district);
     }
+    setState(() {
+    });
+  }
+
+  Future<void> getAvailability(int selectedDistrict) async {
+    print("In getAvailability");
+    DistrictAvailability districtAvailability;
+    String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=$selectedDistrict&date=13-05-2021";
+    var response = await http.get(Uri.parse(url));
+    var jsonData = jsonDecode(response.body);
+
+    for(var elements in jsonData['sessions']) {
+      print(elements['name']);
+      districtAvailability = DistrictAvailability(
+        centerId: elements['center_id'],
+        centerName: elements['name'],
+        centerAddress: elements['address'],
+        stateName: elements['state_name'],
+        districtName: elements['district_name'],
+        blockName: elements['block_name'],
+        pincode: elements['pincode'],
+        timeFrom: elements['from'],
+        timeTo: elements['to'],
+        lat: elements['lat'],
+        long: elements['long'],
+        feeType: elements['fee_type'],
+        fee: elements['fee'],
+        availableCapacity: elements['available_capacity'],
+        minAgeLimit: elements['min_age_limit'],
+        vaccine: elements['vaccine'],
+        slots: elements['slots'],
+      );
+      districtAvailabilities.add(districtAvailability);
+    }
+    setState(() {
+    });
   }
 
   @override
@@ -86,38 +124,59 @@ class _HomeState extends State<Home> {
       ),
       body: _loadingStates ? CircularProgressIndicator() :
       Center(
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            DropdownButton<String>(
-              value: _value1,
-              hint: Text("Select State"),
-              underline: Container(),
-              items: states.map<DropdownMenuItem<String>>((var value){
-                return DropdownMenuItem<String>(
-                  value: value.stateName,
-                  child: Text(value.stateName),
-                );
-              }).toList(),
-              onChanged: (String value) {
-                print(value);
-                selectedState = states.indexWhere((element) => element.stateName==value);
-                getDistricts(selectedState);
-              },
+            Container(
+              height: 20,
+              width: MediaQuery.of(context).size.width*0.5,
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _value1,
+                hint: Text("Select State"),
+                underline: Container(),
+                items: states.map<DropdownMenuItem<String>>((var value){
+                  return DropdownMenuItem<String>(
+                    value: value.stateName,
+                    child: Text(value.stateName),
+                  );
+                }).toList(),
+                onChanged: (String value) {
+                  print(value);
+                  _value1 = value;
+                  selectedState = states.indexWhere((element) => element.stateName==value);
+                  getDistricts(states[selectedState].stateId);
+                  setState(() {
+                  });
+                },
+              ),
             ),
-            DropdownButton<String>(
-              value: _value1,
-              hint: Text("Select State"),
-              underline: Container(),
-              items: states.map<DropdownMenuItem<String>>((var value){
-                return DropdownMenuItem<String>(
-                  value: value.stateName,
-                  child: Text(value.stateName),
-                );
-              }).toList(),
-              onChanged: (String value) {
-                print("Changed");
-              },
-            ),
+            selectedState!=null ? Container(
+              width: MediaQuery.of(context).size.width*0.5,
+              height: 20,
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _value2,
+                hint: Text("Select District"),
+
+                underline: Container(),
+                items: districts.map<DropdownMenuItem<String>>((var value){
+                  return DropdownMenuItem<String>(
+                    value: value.districtName,
+                    child: Text(value.districtName),
+                  );
+                }).toList(),
+                onChanged: (String value) {
+                  setState(() {
+                    _value2=value;
+                  });
+                  selectedDistrict = districts.indexWhere((element) => element.districtName==value);
+                  print(districts[selectedDistrict].districtId);
+                  getAvailability(districts[selectedDistrict].districtId);
+
+                },
+              ),
+            ) : Container(),
           ],
         ),
       ),
