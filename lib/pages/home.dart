@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -336,19 +337,27 @@ class _HomeState extends State<Home> {
                           ),
                           elevation: 5.0,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("Center Name: " +
                                   filteredAvailabilities[index].centerName),
                               //Text("Min. Age: " + districtAvailabilities[index].minAgeLimit.toString()),
                               //Text("Available Capacity: " + districtAvailabilities[index].availableCapacity.toString()),
-                              Text("District Name: " +
-                                  filteredAvailabilities[index].districtName),
+                              //Text("District Name: " + filteredAvailabilities[index].districtName),
                               Text("Fee Type: " +
                                   filteredAvailabilities[index].feeType),
                               //Text("Vaccine: " + districtAvailabilities[index].vaccine),
                               Text("Center Address :" +
                                   filteredAvailabilities[index].centerAddress),
                               //Text("Date: " + districtAvailabilities[index].date),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                Text("Date: "),
+                                Text("Available Slots: "),
+                                Text("Min Age Limit: "),
+                              ],
+                              ),
                               _returnSessions(filteredAvailabilities[index].sessions),
 
                             ],
@@ -373,10 +382,18 @@ class _HomeState extends State<Home> {
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
               return Container(
-                child: Column(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Text(item[index].date),
-                    Text(item[index].availableCapacity.toString()),
+                    Container(
+                      width: 15,
+                        child: Text(item[index].availableCapacity.toString(), textAlign: TextAlign.center,),
+                      decoration: BoxDecoration(
+                        color: item[index].availableCapacity>100? Colors.green : item[index].availableCapacity>0? Colors.yellow : Colors.red,
+                      ),
+                    ),
+                    Text(item[index].minAgeLimit.toString() + "+"),
                   ],
                 ),
               );
