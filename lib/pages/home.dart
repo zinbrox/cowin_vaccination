@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+List<String> filterOptions = ["18+", "45+", "COVISHIELD", "COVAXIN", "Paid", "Free"];
+List<bool> filterSelected = [false, false, false, false, false, false];
+
 class States{
   int stateId;
   String stateName;
@@ -43,8 +46,9 @@ class _HomeState extends State<Home> {
   List<States> states = [];
   List<Districts> districts = [];
   List<DistrictAvailability> districtAvailabilities = [];
+  List<DistrictAvailability> filteredAvailabilities = [];
 
-  bool _loadingStates = true;
+  bool _loadingStates = true, _hasLoadedCenters=false;
   String _value1, _value2;
   int selectedState, selectedDistrict;
 
@@ -133,22 +137,102 @@ class _HomeState extends State<Home> {
           sessions: sessions,
         );
 
-      for(var x in districtAvailability.sessions)
-        print(x.date);
-        districtAvailabilities.add(districtAvailability);
+      districtAvailabilities.add(districtAvailability);
+      filteredAvailabilities.add(districtAvailability);
       }
 
-      for(var x in districtAvailabilities) {
-        print(x.centerName);
+      /*
+      for(var i in districtAvailabilities) {
+        print(i.centerName);
+        for(var j in i.sessions)
+          print(j.date);
       }
+       */
 
 
-      setState(() {});
+
+
+      setState(() {
+        _hasLoadedCenters=true;
+      });
+    print(districtAvailabilities.length);
     }
 
-    void filterAvailable() {
+    Widget showFilters() {
+      return Container(
+        height: 50,
+        child: ListView.separated(
+          itemCount: filterOptions.length,
+            scrollDirection: Axis.horizontal,
+            separatorBuilder: (context, index) => Divider(
+              color: Colors.red,
+            ),
+            itemBuilder: (BuildContext context, int index){
+              return InkWell(
+                onTap: (){
+                  setState(() {
+                    filterSelected[index] = !filterSelected[index];
+                  });
+                  filterChange();
+                },
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    height: 30,
+                    width: MediaQuery.of(context).size.height*0.15,
+                    child: Text(filterOptions[index], textAlign: TextAlign.center,),
+                    decoration: BoxDecoration(
+                      color: filterSelected[index] ? Colors.blue : Colors.grey,
+                      border: Border.all(
+                        color: Colors.black,
+                      ),
+                        borderRadius: BorderRadius.all(Radius.circular(15))
+                    ),
+                  ),
+                ),
+              );
+        }),
+      );
+    }
+
+    void filterChange() {
+    setState(() {
+      _hasLoadedCenters=false;
+    });
+    print("In filterChange");
+      //filteredAvailabilities.clear();
+      print(districtAvailabilities.length);
+      for(var i in districtAvailabilities)
+        for(var j in i.sessions) {
+          print("Hello");
+          if((filterSelected[0] && j.minAgeLimit==18) || (filterSelected[1] && j.minAgeLimit==45) || (filterSelected[2] && j.vaccine=="COVISHIELD") ||
+              (filterSelected[3] && j.vaccine=="COVAXIN") || (filterSelected[4] && i.feeType=="Paid") || (filterSelected[5] && i.feeType=="Free"))
+            if(!filteredAvailabilities.contains(i))
+             filteredAvailabilities.add(i);
+        }
+      print(filteredAvailabilities);
+      setState(() {
+        _hasLoadedCenters=true;
+      });
+    }
+
+    /*
+    Future<void> filterAvailable() async {
       print("In filterAvailable");
+      await showModalBottomSheet(
+          context: context,
+          builder: (context){
+            return StatefulBuilder(builder: (context, setState){
+              return Container(
+                height: 300,
+                child:
+              );
+            })
+      }
+      );
     }
+
+     */
 
     @override
     void initState() {
@@ -231,10 +315,20 @@ class _HomeState extends State<Home> {
               },
                 child: Text("Search Available Slots"),
               ) : Container(),
-              districtAvailabilities.length != 0 ? Expanded(
+              _hasLoadedCenters ? showFilters() : Container(),
+              _hasLoadedCenters ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Available Centers: " + filteredAvailabilities.length.toString()),
+                  IconButton(icon: Icon(Icons.filter_list),
+                      onPressed: () {
+                      })
+                ],
+              ) : Container(),
+              _hasLoadedCenters ? Expanded(
                 child: Container(
                   child: ListView.builder(
-                      itemCount: districtAvailabilities.length,
+                      itemCount: filteredAvailabilities.length,
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           shape: RoundedRectangleBorder(
@@ -244,18 +338,18 @@ class _HomeState extends State<Home> {
                           child: Column(
                             children: [
                               Text("Center Name: " +
-                                  districtAvailabilities[index].centerName),
+                                  filteredAvailabilities[index].centerName),
                               //Text("Min. Age: " + districtAvailabilities[index].minAgeLimit.toString()),
                               //Text("Available Capacity: " + districtAvailabilities[index].availableCapacity.toString()),
                               Text("District Name: " +
-                                  districtAvailabilities[index].districtName),
+                                  filteredAvailabilities[index].districtName),
                               Text("Fee Type: " +
-                                  districtAvailabilities[index].feeType),
+                                  filteredAvailabilities[index].feeType),
                               //Text("Vaccine: " + districtAvailabilities[index].vaccine),
                               Text("Center Address :" +
-                                  districtAvailabilities[index].centerAddress),
+                                  filteredAvailabilities[index].centerAddress),
                               //Text("Date: " + districtAvailabilities[index].date),
-                              _returnSessions(districtAvailabilities[index].sessions),
+                              _returnSessions(filteredAvailabilities[index].sessions),
 
                             ],
                           ),
@@ -263,6 +357,7 @@ class _HomeState extends State<Home> {
                       }),
                 ),
               ) : Container(),
+
             ],
           ),
         ),
