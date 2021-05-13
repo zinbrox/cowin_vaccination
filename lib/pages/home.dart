@@ -23,19 +23,11 @@ class DistrictAvailability{
   int centerId;
   String centerName, centerAddress, blockName, stateName, districtName;
   int pincode, lat, long;
-  int availableCapacity, minAgeLimit;
-  String vaccine, fee, feeType, timeFrom, timeTo, date;
+  String feeType, timeFrom, timeTo, date;
   List<dynamic> slots;
-  List<Sessions> sessions;
+  List<dynamic> sessions;
   DistrictAvailability({this.centerId, this.centerName, this.centerAddress, this.blockName, this.stateName, this.districtName, this.pincode, this.lat,
-  this.long, this.availableCapacity, this.minAgeLimit, this.vaccine, this.fee, this.feeType, this.timeFrom, this.timeTo, this.date, this.slots, this.sessions});
-}
-
-class Sessions{
-  int availableCapacity, minAgeLimit;
-  String vaccine, date;
-  List<dynamic> slots;
-  Sessions({this.availableCapacity, this.minAgeLimit, this.vaccine, this.date, this.slots});
+  this.long, this.feeType, this.timeFrom, this.timeTo, this.date, this.slots, this.sessions});
 }
 
 class Home extends StatefulWidget {
@@ -52,6 +44,7 @@ class _HomeState extends State<Home> {
   bool _loadingStates = true, _hasLoadedCenters=false;
   String _value1, _value2;
   int selectedState, selectedDistrict;
+  int numFilters = 0; // Number of Filters added
 
   Future<void> getStates() async {
     print("In getStates");
@@ -93,65 +86,41 @@ class _HomeState extends State<Home> {
   Future<void> getAvailability(int selectedDistrict) async {
     print("In getAvailability");
     DistrictAvailability districtAvailability;
-    Sessions session;
-    List<Sessions> sessions = [];
     districtAvailabilities.clear();
+    filteredAvailabilities.clear();
     String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$selectedDistrict&date=13-05-2021";
     var response = await http.get(Uri.parse(url));
     var jsonData = jsonDecode(response.body);
 
     for (var elements in jsonData['centers']) {
-      //print(elements['sessions']);
-      sessions.clear();
-
-      //for(var element in elements['sessions'])
-        //print(element);
-
-
-      for (var element in elements['sessions']) {
-        //print(element);
-          session = new Sessions(
-            availableCapacity: element['available_capacity'],
-            minAgeLimit: element['min_age_limit'],
-            vaccine: element['vaccine'],
-            date: element['date'],
-            slots: element['slots'],
-          );
-          //print(session.date);
-          sessions.add(session);
-      }
-
-        //print(sessions.length);
         districtAvailability = new DistrictAvailability(
           centerId: elements['center_id'],
           centerName: elements['name'],
           centerAddress: elements['address'],
-          stateName: elements['state_name'],
           districtName: elements['district_name'],
           blockName: elements['block_name'],
           pincode: elements['pincode'],
           timeFrom: elements['from'],
           timeTo: elements['to'],
-          lat: elements['lat'],
-          long: elements['long'],
           feeType: elements['fee_type'],
-          sessions: sessions,
+          sessions: elements['sessions'],
         );
+
 
       districtAvailabilities.add(districtAvailability);
       filteredAvailabilities.add(districtAvailability);
+      /*
+      for(var x in districtAvailability.sessions)
+        print(x.date);
+
+        */
       }
 
-      /*
-      for(var i in districtAvailabilities) {
+      for(var i in filteredAvailabilities) {
         print(i.centerName);
         for(var j in i.sessions)
-          print(j.date);
+          print(j['min_age_limit']);
       }
-       */
-
-
-
 
       setState(() {
         _hasLoadedCenters=true;
@@ -173,7 +142,12 @@ class _HomeState extends State<Home> {
                 onTap: (){
                   setState(() {
                     filterSelected[index] = !filterSelected[index];
+                    if(filterSelected[index])
+                      numFilters++;
+                    else
+                      numFilters--;
                   });
+                  print(filterSelected);
                   filterChange();
                 },
                 child: Align(
@@ -201,39 +175,28 @@ class _HomeState extends State<Home> {
       _hasLoadedCenters=false;
     });
     print("In filterChange");
-      //filteredAvailabilities.clear();
+    List<DistrictAvailability> newFiltered = [];
+
       print(districtAvailabilities.length);
       for(var i in districtAvailabilities)
         for(var j in i.sessions) {
-          print("Hello");
-          if((filterSelected[0] && j.minAgeLimit==18) || (filterSelected[1] && j.minAgeLimit==45) || (filterSelected[2] && j.vaccine=="COVISHIELD") ||
-              (filterSelected[3] && j.vaccine=="COVAXIN") || (filterSelected[4] && i.feeType=="Paid") || (filterSelected[5] && i.feeType=="Free"))
-            if(!filteredAvailabilities.contains(i))
-             filteredAvailabilities.add(i);
+          if((filterSelected[0] && j['min_age_limit']==18) || (filterSelected[1] && j['min_age_limit']==45) || (filterSelected[2] && j['vaccine']=="COVISHIELD") ||
+              (filterSelected[3] && j['vaccine']=="COVAXIN") || (filterSelected[4] && i.feeType=="Paid") || (filterSelected[5] && i.feeType=="Free"))
+            if(!newFiltered.contains(i)) {
+              print("Found");
+              newFiltered.add(i);
+            }
         }
+
+        filteredAvailabilities=newFiltered;
       print(filteredAvailabilities);
+      if(numFilters==0)
+        filteredAvailabilities=districtAvailabilities;
+      print(districtAvailabilities);
       setState(() {
         _hasLoadedCenters=true;
       });
     }
-
-    /*
-    Future<void> filterAvailable() async {
-      print("In filterAvailable");
-      await showModalBottomSheet(
-          context: context,
-          builder: (context){
-            return StatefulBuilder(builder: (context, setState){
-              return Container(
-                height: 300,
-                child:
-              );
-            })
-      }
-      );
-    }
-
-     */
 
     @override
     void initState() {
@@ -340,21 +303,19 @@ class _HomeState extends State<Home> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("Center Name: " +
-                                  filteredAvailabilities[index].centerName),
-                              //Text("Min. Age: " + districtAvailabilities[index].minAgeLimit.toString()),
-                              //Text("Available Capacity: " + districtAvailabilities[index].availableCapacity.toString()),
-                              //Text("District Name: " + filteredAvailabilities[index].districtName),
+                                  filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20),),
+                              Text("Block: " + filteredAvailabilities[index].blockName),
                               Text("Fee Type: " +
                                   filteredAvailabilities[index].feeType),
-                              //Text("Vaccine: " + districtAvailabilities[index].vaccine),
+                              Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo),
                               Text("Center Address :" +
                                   filteredAvailabilities[index].centerAddress),
-                              //Text("Date: " + districtAvailabilities[index].date),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
                                 Text("Date: "),
                                 Text("Available Slots: "),
+                                Text("Vaccine: "),
                                 Text("Min Age Limit: "),
                               ],
                               ),
@@ -374,26 +335,28 @@ class _HomeState extends State<Home> {
 
   }
 
-    Widget _returnSessions(List<Sessions> item) {
+    Widget _returnSessions(List<dynamic> item) {
       return Container(
-        child: ListView.builder(
+        child: ListView.separated(
             itemCount: item.length,
             physics: ClampingScrollPhysics(),
             shrinkWrap: true,
+            separatorBuilder: (context, index) => Divider(thickness: 5,),
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text(item[index].date),
+                    Text(item[index]['date']),
                     Container(
                       width: 15,
-                        child: Text(item[index].availableCapacity.toString(), textAlign: TextAlign.center,),
+                        child: Text(item[index]['available_capacity'].toString(), textAlign: TextAlign.center,),
                       decoration: BoxDecoration(
-                        color: item[index].availableCapacity>100? Colors.green : item[index].availableCapacity>0? Colors.yellow : Colors.red,
+                        color: item[index]['available_capacity']>100? Colors.green : item[index]['available_capacity']>0? Colors.yellow : Colors.red,
                       ),
                     ),
-                    Text(item[index].minAgeLimit.toString() + "+"),
+                    Text(item[index]['vaccine']),
+                    Text(item[index]['min_age_limit'].toString() + "+"),
                   ],
                 ),
               );
