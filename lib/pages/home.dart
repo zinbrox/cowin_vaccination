@@ -280,15 +280,7 @@ class _HomeState extends State<Home> {
                 child: Text("Search Available Slots"),
               ) : Container(),
               _hasLoadedCenters ? showFilters() : Container(),
-              _hasLoadedCenters ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Available Centers: " + filteredAvailabilities.length.toString()),
-                  IconButton(icon: Icon(Icons.filter_list),
-                      onPressed: () {
-                      })
-                ],
-              ) : Container(),
+              _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),
               _hasLoadedCenters ? Expanded(
                 child: Container(
                   child: ListView.builder(
@@ -298,25 +290,25 @@ class _HomeState extends State<Home> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          elevation: 5.0,
+                          elevation: 4.0,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Center Name: " +
-                                  filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20),),
+                              Text("Center: " +
+                                  filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                               Text("Block: " + filteredAvailabilities[index].blockName),
                               Text("Fee Type: " +
                                   filteredAvailabilities[index].feeType),
                               Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo),
-                              Text("Center Address :" +
+                              Text("Address: " +
                                   filteredAvailabilities[index].centerAddress),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                Text("Date: "),
-                                Text("Available Slots: "),
-                                Text("Vaccine: "),
-                                Text("Min Age Limit: "),
+                                Expanded(child: Text("Date: ", style: TextStyle(fontSize: 20),),),
+                                Expanded(child: Text("Available Slots: ", style: TextStyle(fontSize: 20),),),
+                                Expanded(child: Text("Vaccine: ", style: TextStyle(fontSize: 20),),),
+                                Expanded(child: Text("Min Age Limit: ", style: TextStyle(fontSize: 20),)),
                               ],
                               ),
                               _returnSessions(filteredAvailabilities[index].sessions),
@@ -345,18 +337,18 @@ class _HomeState extends State<Home> {
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(item[index]['date']),
+                    Text(item[index]['date'], style: TextStyle(fontSize: 20),),
                     Container(
-                      width: 15,
-                        child: Text(item[index]['available_capacity'].toString(), textAlign: TextAlign.center,),
+                      width: 40,
+                        child: Text(item[index]['available_capacity'].toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 20),),
                       decoration: BoxDecoration(
                         color: item[index]['available_capacity']>100? Colors.green : item[index]['available_capacity']>0? Colors.yellow : Colors.red,
                       ),
                     ),
-                    Text(item[index]['vaccine']),
-                    Text(item[index]['min_age_limit'].toString() + "+"),
+                    Text(item[index]['vaccine']=="COVAXIN"? item[index]['vaccine'] + "      " : item[index]['vaccine'], style: TextStyle(fontSize: 20),),
+                    Text(item[index]['min_age_limit'].toString() + "+", style: TextStyle(fontSize: 20),),
                   ],
                 ),
               );
