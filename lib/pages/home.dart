@@ -128,7 +128,6 @@ class _HomeState extends State<Home> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              height: 20,
               width: MediaQuery.of(context).size.width*0.5,
               child: DropdownButton<String>(
                 isExpanded: true,
@@ -144,6 +143,12 @@ class _HomeState extends State<Home> {
                 onChanged: (String value) {
                   print(value);
                   _value1 = value;
+                  setState(() {
+                    selectedState=null;
+                    _value2=null;
+                    selectedDistrict=null;
+                    districts.clear();
+                  });
                   selectedState = states.indexWhere((element) => element.stateName==value);
                   getDistricts(states[selectedState].stateId);
                   setState(() {
@@ -153,7 +158,6 @@ class _HomeState extends State<Home> {
             ),
             selectedState!=null ? Container(
               width: MediaQuery.of(context).size.width*0.5,
-              height: 20,
               child: DropdownButton<String>(
                 isExpanded: true,
                 value: _value2,
@@ -172,10 +176,13 @@ class _HomeState extends State<Home> {
                   });
                   selectedDistrict = districts.indexWhere((element) => element.districtName==value);
                   print(districts[selectedDistrict].districtId);
-                  getAvailability(districts[selectedDistrict].districtId);
-
                 },
               ),
+            ) : Container(),
+            selectedDistrict!=null ? ElevatedButton(onPressed: (){
+                getAvailability(districts[selectedDistrict].districtId);
+            },
+                child: Text("Search Available Slots"),
             ) : Container(),
           ],
         ),
