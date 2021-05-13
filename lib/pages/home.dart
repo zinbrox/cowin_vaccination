@@ -155,9 +155,9 @@ class _HomeState extends State<Home> {
                   child: Container(
                     height: 30,
                     width: MediaQuery.of(context).size.height*0.15,
-                    child: Text(filterOptions[index], textAlign: TextAlign.center,),
+                    child: FittedBox(child: Text(filterOptions[index], textAlign: TextAlign.center,), fit: BoxFit.none,),
                     decoration: BoxDecoration(
-                      color: filterSelected[index] ? Colors.blue : Colors.grey,
+                      color: filterSelected[index] ? Colors.blue : Colors.black12,
                       border: Border.all(
                         color: Colors.black,
                       ),
