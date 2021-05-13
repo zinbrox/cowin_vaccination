@@ -20,10 +20,18 @@ class DistrictAvailability{
   String centerName, centerAddress, blockName, stateName, districtName;
   int pincode, lat, long;
   int availableCapacity, minAgeLimit;
-  String vaccine, fee, feeType, timeFrom, timeTo;
+  String vaccine, fee, feeType, timeFrom, timeTo, date;
   List<dynamic> slots;
+  List<Sessions> sessions;
   DistrictAvailability({this.centerId, this.centerName, this.centerAddress, this.blockName, this.stateName, this.districtName, this.pincode, this.lat,
-  this.long, this.availableCapacity, this.minAgeLimit, this.vaccine, this.fee, this.feeType, this.timeFrom, this.timeTo, this.slots});
+  this.long, this.availableCapacity, this.minAgeLimit, this.vaccine, this.fee, this.feeType, this.timeFrom, this.timeTo, this.date, this.slots, this.sessions});
+}
+
+class Sessions{
+  int availableCapacity, minAgeLimit;
+  String vaccine, date;
+  List<dynamic> slots;
+  Sessions({this.availableCapacity, this.minAgeLimit, this.vaccine, this.date, this.slots});
 }
 
 class Home extends StatefulWidget {
@@ -80,113 +88,206 @@ class _HomeState extends State<Home> {
   Future<void> getAvailability(int selectedDistrict) async {
     print("In getAvailability");
     DistrictAvailability districtAvailability;
-    String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=$selectedDistrict&date=13-05-2021";
+    Sessions session;
+    List<Sessions> sessions = [];
+    districtAvailabilities.clear();
+    String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$selectedDistrict&date=13-05-2021";
     var response = await http.get(Uri.parse(url));
     var jsonData = jsonDecode(response.body);
 
-    for(var elements in jsonData['sessions']) {
-      print(elements['name']);
-      districtAvailability = DistrictAvailability(
-        centerId: elements['center_id'],
-        centerName: elements['name'],
-        centerAddress: elements['address'],
-        stateName: elements['state_name'],
-        districtName: elements['district_name'],
-        blockName: elements['block_name'],
-        pincode: elements['pincode'],
-        timeFrom: elements['from'],
-        timeTo: elements['to'],
-        lat: elements['lat'],
-        long: elements['long'],
-        feeType: elements['fee_type'],
-        fee: elements['fee'],
-        availableCapacity: elements['available_capacity'],
-        minAgeLimit: elements['min_age_limit'],
-        vaccine: elements['vaccine'],
-        slots: elements['slots'],
-      );
-      districtAvailabilities.add(districtAvailability);
+    for (var elements in jsonData['centers']) {
+      //print(elements['sessions']);
+      sessions.clear();
+
+      //for(var element in elements['sessions'])
+        //print(element);
+
+
+      for (var element in elements['sessions']) {
+        //print(element);
+          session = new Sessions(
+            availableCapacity: element['available_capacity'],
+            minAgeLimit: element['min_age_limit'],
+            vaccine: element['vaccine'],
+            date: element['date'],
+            slots: element['slots'],
+          );
+          //print(session.date);
+          sessions.add(session);
+      }
+
+        //print(sessions.length);
+        districtAvailability = new DistrictAvailability(
+          centerId: elements['center_id'],
+          centerName: elements['name'],
+          centerAddress: elements['address'],
+          stateName: elements['state_name'],
+          districtName: elements['district_name'],
+          blockName: elements['block_name'],
+          pincode: elements['pincode'],
+          timeFrom: elements['from'],
+          timeTo: elements['to'],
+          lat: elements['lat'],
+          long: elements['long'],
+          feeType: elements['fee_type'],
+          sessions: sessions,
+        );
+
+      for(var x in districtAvailability.sessions)
+        print(x.date);
+        districtAvailabilities.add(districtAvailability);
+      }
+
+      for(var x in districtAvailabilities) {
+        print(x.centerName);
+      }
+
+
+      setState(() {});
     }
-    setState(() {
-    });
-  }
 
-  @override
-  void initState() {
-    super.initState();
-    getStates();
-  }
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Home"),
-      ),
-      body: _loadingStates ? CircularProgressIndicator() :
-      Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width*0.5,
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: _value1,
-                hint: Text("Select State"),
-                underline: Container(),
-                items: states.map<DropdownMenuItem<String>>((var value){
-                  return DropdownMenuItem<String>(
-                    value: value.stateName,
-                    child: Text(value.stateName),
-                  );
-                }).toList(),
-                onChanged: (String value) {
-                  print(value);
-                  _value1 = value;
-                  setState(() {
-                    selectedState=null;
-                    _value2=null;
-                    selectedDistrict=null;
-                    districts.clear();
-                  });
-                  selectedState = states.indexWhere((element) => element.stateName==value);
-                  getDistricts(states[selectedState].stateId);
-                  setState(() {
-                  });
-                },
-              ),
-            ),
-            selectedState!=null ? Container(
-              width: MediaQuery.of(context).size.width*0.5,
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: _value2,
-                hint: Text("Select District"),
+    void filterAvailable() {
+      print("In filterAvailable");
+    }
 
-                underline: Container(),
-                items: districts.map<DropdownMenuItem<String>>((var value){
-                  return DropdownMenuItem<String>(
-                    value: value.districtName,
-                    child: Text(value.districtName),
-                  );
-                }).toList(),
-                onChanged: (String value) {
-                  setState(() {
-                    _value2=value;
-                  });
-                  selectedDistrict = districts.indexWhere((element) => element.districtName==value);
-                  print(districts[selectedDistrict].districtId);
-                },
-              ),
-            ) : Container(),
-            selectedDistrict!=null ? ElevatedButton(onPressed: (){
-                getAvailability(districts[selectedDistrict].districtId);
-            },
-                child: Text("Search Available Slots"),
-            ) : Container(),
-          ],
+    @override
+    void initState() {
+      super.initState();
+      getStates();
+    }
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Home"),
         ),
-      ),
-    );
+        body: _loadingStates ? CircularProgressIndicator() :
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.5,
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: _value1,
+                  hint: Text("Select State"),
+                  underline: Container(),
+                  items: states.map<DropdownMenuItem<String>>((var value) {
+                    return DropdownMenuItem<String>(
+                      value: value.stateName,
+                      child: Text(value.stateName),
+                    );
+                  }).toList(),
+                  onChanged: (String value) {
+                    print(value);
+                    _value1 = value;
+                    setState(() {
+                      selectedState = null;
+                      _value2 = null;
+                      selectedDistrict = null;
+                      districts.clear();
+                    });
+                    selectedState =
+                        states.indexWhere((element) => element.stateName ==
+                            value);
+                    getDistricts(states[selectedState].stateId);
+                    setState(() {});
+                  },
+                ),
+              ),
+              selectedState != null ? Container(
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.5,
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: _value2,
+                  hint: Text("Select District"),
+
+                  underline: Container(),
+                  items: districts.map<DropdownMenuItem<String>>((var value) {
+                    return DropdownMenuItem<String>(
+                      value: value.districtName,
+                      child: Text(value.districtName),
+                    );
+                  }).toList(),
+                  onChanged: (String value) {
+                    setState(() {
+                      _value2 = value;
+                    });
+                    selectedDistrict = districts.indexWhere((element) => element
+                        .districtName == value);
+                    print(districts[selectedDistrict].districtId);
+                  },
+                ),
+              ) : Container(),
+              selectedDistrict != null ? ElevatedButton(onPressed: () {
+                getAvailability(districts[selectedDistrict].districtId);
+              },
+                child: Text("Search Available Slots"),
+              ) : Container(),
+              districtAvailabilities.length != 0 ? Expanded(
+                child: Container(
+                  child: ListView.builder(
+                      itemCount: districtAvailabilities.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 5.0,
+                          child: Column(
+                            children: [
+                              Text("Center Name: " +
+                                  districtAvailabilities[index].centerName),
+                              //Text("Min. Age: " + districtAvailabilities[index].minAgeLimit.toString()),
+                              //Text("Available Capacity: " + districtAvailabilities[index].availableCapacity.toString()),
+                              Text("District Name: " +
+                                  districtAvailabilities[index].districtName),
+                              Text("Fee Type: " +
+                                  districtAvailabilities[index].feeType),
+                              //Text("Vaccine: " + districtAvailabilities[index].vaccine),
+                              Text("Center Address :" +
+                                  districtAvailabilities[index].centerAddress),
+                              //Text("Date: " + districtAvailabilities[index].date),
+                              _returnSessions(districtAvailabilities[index].sessions),
+
+                            ],
+                          ),
+                        );
+                      }),
+                ),
+              ) : Container(),
+            ],
+          ),
+        ),
+      );
+
   }
+
+    Widget _returnSessions(List<Sessions> item) {
+      return Container(
+        child: ListView.builder(
+            itemCount: item.length,
+            physics: ClampingScrollPhysics(),
+            shrinkWrap: true,
+            itemBuilder: (BuildContext context, int index) {
+              return Container(
+                child: Column(
+                  children: [
+                    Text(item[index].date),
+                    Text(item[index].availableCapacity.toString()),
+                  ],
+                ),
+              );
+            }),
+      );
+    }
+
+
 }
