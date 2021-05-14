@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cowin_vaccination/pages/home.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io' show File, Platform;
 import 'package:http/http.dart' as http;
@@ -98,11 +99,17 @@ class LocalNotifyManager {
     var platformChannelSpecifics =
     NotificationDetails(android: androidChannelSpecifics, iOS: iosChannelSpecifics);
     List<DistrictAvailability> filtered = await getAvailabilities();
-    //int capacity, index; String vaccine;
+    int capacity; String vaccine, center;
     List<String> centersDone = [];
     if(filtered.length>0) {
+      for(var i in filtered) {
+        i.sessions.sort((a,b) => b['available_capacity'].compareTo(a['available_capacity']));
+      }
+      filtered.sort((a,b) => b.sessions[0]['available_capacity'].compareTo(a.sessions[0]['available_capacity']));
+      /*
       for(var i in filtered)
         for(var j in i.sessions)
+
           if(j['available_capacity']>0 && !centersDone.contains(i.centerName)) {
             centersDone.add(i.centerName);
             await flutterLocalNotificationsPlugin.periodicallyShow(
@@ -115,23 +122,24 @@ class LocalNotifyManager {
             );
           }
 
-      /*
-          if(j['available_capacity']>0) {
-            capacity = j['available_capacity'];
-            vaccine = j['vaccine'];
-            index = filtered.indexOf(i);
-            break;
-          }
+           */
+
+
+
+            capacity = filtered[0].sessions[0]['available_capacity'];
+            vaccine = filtered[0].sessions[0]['vaccine'];
+            center = filtered[0].centerName;
+
       await flutterLocalNotificationsPlugin.periodicallyShow(
         0,
-        'Hurry! Slots Available at ${filtered[index].centerName}' ,
+        'Hurry! Slots Available at $center' ,
         'Available Capacity: $capacity. Vaccine: $vaccine',
         RepeatInterval.everyMinute,
         platformChannelSpecifics,
         payload: 'Test Payload',
       );
 
-       */
+
     }
   }
 
@@ -150,6 +158,8 @@ class LocalNotifyManager {
 
     final prefs = await SharedPreferences.getInstance();
     final districtID = prefs.getInt('districtID') ?? 571;
+
+
 
     String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$districtID&date=$formattedDate";
     var response = await http.get(Uri.parse(url));

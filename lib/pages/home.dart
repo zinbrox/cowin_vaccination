@@ -307,7 +307,7 @@ class _HomeState extends State<Home> {
                   Expanded(child: ElevatedButton(
                       onPressed: () async {
                         final prefs = await SharedPreferences.getInstance();
-                        prefs.setInt('districtID', selectedDistrict);
+                        prefs.setInt('districtID', districts[selectedDistrict].districtId);
                         await localNotifyManager.repeatNotification();
                         print("Started Notifications");
                       }, child: Text("Send Notifications of this District")),),
