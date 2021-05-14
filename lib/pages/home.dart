@@ -185,23 +185,54 @@ class _HomeState extends State<Home> {
     });
     print("In filterChange");
     List<DistrictAvailability> newFiltered = [];
+    DistrictAvailability tempAvailability;
 
       print(districtAvailabilities.length);
-      for(var i in districtAvailabilities)
-        for(var j in i.sessions) {
-          if((filterSelected[0] && j['min_age_limit']==18) || (filterSelected[1] && j['min_age_limit']==45) || (filterSelected[2] && j['vaccine']=="COVISHIELD") ||
-              (filterSelected[3] && j['vaccine']=="COVAXIN") || (filterSelected[4] && i.feeType=="Paid") || (filterSelected[5] && i.feeType=="Free"))
-            if(!newFiltered.contains(i)) {
-              print("Found");
-              newFiltered.add(i);
-            }
+      for(var i in districtAvailabilities) {
+        List<dynamic> tempSessions = [];
+        for (var j in i.sessions) {
+
+          if ((filterSelected[1] && j['min_age_limit'] == 45))
+            tempSessions.add(j);
+
+          if((filterSelected[1] && j['min_age_limit'] == 45) && !tempSessions.contains(j))
+            tempSessions.add(j);
+          else if((filterSelected[1] && j['min_age_limit'] != 45) && tempSessions.contains(j))
+            tempSessions.remove(j);
+
+          if((filterSelected[2] && j['vaccine'] == "COVISHIELD") && !tempSessions.contains(j))
+            tempSessions.add(j);
+          else if((filterSelected[2] && j['vaccine'] != "COVISHIELD") && tempSessions.contains(j))
+            tempSessions.remove(j);
+
+          if((filterSelected[3] && j['vaccine'] == "COVAXIN") && !tempSessions.contains(j))
+            tempSessions.add(j);
+          else if((filterSelected[3] && j['vaccine'] != "COVAXIN") && tempSessions.contains(j))
+            tempSessions.remove(j);
+
+
+
         }
+        tempAvailability=i;
+        if(tempSessions.isEmpty)
+          continue;
+        tempAvailability.sessions=tempSessions;
+        newFiltered.add(tempAvailability);
+        if((filterSelected[4] && tempAvailability.feeType == "Paid") && !newFiltered.contains(tempAvailability))
+          newFiltered.add(tempAvailability);
+        else if((filterSelected[4] && tempAvailability.feeType != "Paid") && newFiltered.contains(tempAvailability))
+          newFiltered.remove(tempAvailability);
+        if((filterSelected[5] && tempAvailability.feeType == "Free") && !newFiltered.contains(tempAvailability))
+          newFiltered.add(tempAvailability);
+        else if((filterSelected[5] && tempAvailability.feeType != "Free") && newFiltered.contains(tempAvailability))
+          newFiltered.remove(tempAvailability);
+      }
 
         filteredAvailabilities=newFiltered;
-      print(filteredAvailabilities);
+      //print(filteredAvailabilities);
       if(numFilters==0)
         filteredAvailabilities=districtAvailabilities;
-      print(districtAvailabilities);
+      //print(districtAvailabilities);
       setState(() {
         _hasLoadedCenters=true;
       });
