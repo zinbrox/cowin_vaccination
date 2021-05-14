@@ -97,11 +97,20 @@ class LocalNotifyManager {
     var platformChannelSpecifics =
     NotificationDetails(android: androidChannelSpecifics, iOS: iosChannelSpecifics);
     List<DistrictAvailability> filtered = await getAvailabilities();
-    if(filtered.length > 0) {
+    int capacity, index; String vaccine;
+    if(filtered.length>0) {
+      for(var i in filtered)
+        for(var j in i.sessions)
+          if(j['available_capacity']>0) {
+            capacity = j['available_capacity'];
+            vaccine = j['vaccine'];
+            index = filtered.indexOf(i);
+            break;
+          }
       await flutterLocalNotificationsPlugin.periodicallyShow(
         0,
-        filtered[0].centerName,
-        'Repeating Test Body',
+        'Hurry! Slots Available at ${filtered[index].centerName}' ,
+        'Available Capacity: $capacity. Vaccine: $vaccine',
         RepeatInterval.everyMinute,
         platformChannelSpecifics,
         payload: 'Test Payload',
