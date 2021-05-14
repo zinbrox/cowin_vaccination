@@ -3,6 +3,8 @@ import 'package:cowin_vaccination/helpers/notificationsPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 List<String> filterOptions = ["18+", "45+", "COVISHIELD", "COVAXIN", "Paid", "Free"];
 List<bool> filterSelected = [false, false, false, false, false, false];
@@ -88,7 +90,12 @@ class _HomeState extends State<Home> {
     DistrictAvailability districtAvailability;
     districtAvailabilities.clear();
     filteredAvailabilities.clear();
-    String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$selectedDistrict&date=13-05-2021";
+
+    var now = new DateTime.now();
+    var formatter = new DateFormat('dd-MM-yyyy');
+    String formattedDate = formatter.format(now);
+
+    String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$selectedDistrict&date=$formattedDate";
     var response = await http.get(Uri.parse(url));
     var jsonData = jsonDecode(response.body);
 
@@ -227,16 +234,6 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
-                  onPressed: () async {
-                    await localNotifyManager.repeatNotification();
-                    print("Started Notifications");
-              }, child: Text("Start Notifications")),
-              ElevatedButton(
-                  onPressed: (){
-                    localNotifyManager.cancelAllNotification();
-                    print("Cancelled Notifications");
-                  }, child: Text("Cancel Notifications")),
               Container(
                 width: MediaQuery
                     .of(context)
@@ -297,10 +294,29 @@ class _HomeState extends State<Home> {
                   },
                 ),
               ) : Container(),
-              selectedDistrict != null ? ElevatedButton(onPressed: () async {
-                getAvailability(districts[selectedDistrict].districtId);
-              },
-                child: Text("Search Available Slots"),
+              selectedDistrict != null ?
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(onPressed: () async {
+                      getAvailability(districts[selectedDistrict].districtId);
+                    },
+                      child: Text("Search Available Slots"),
+                    ),
+                  ),
+                  Expanded(child: ElevatedButton(
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        prefs.setInt('districtID', selectedDistrict);
+                        await localNotifyManager.repeatNotification();
+                        print("Started Notifications");
+                      }, child: Text("Send Notifications of this District")),),
+                  Expanded(child: ElevatedButton(
+                      onPressed: (){
+                        localNotifyManager.cancelAllNotification();
+                        print("Cancelled Notifications");
+                      }, child: Text("Cancel Notifications")),),
+                ],
               ) : Container(),
               _hasLoadedCenters ? showFilters() : Container(),
               _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),

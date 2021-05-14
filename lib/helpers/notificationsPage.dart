@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io' show File, Platform;
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rxdart/subjects.dart';
@@ -97,10 +98,24 @@ class LocalNotifyManager {
     var platformChannelSpecifics =
     NotificationDetails(android: androidChannelSpecifics, iOS: iosChannelSpecifics);
     List<DistrictAvailability> filtered = await getAvailabilities();
-    int capacity, index; String vaccine;
+    //int capacity, index; String vaccine;
+    List<String> centersDone = [];
     if(filtered.length>0) {
       for(var i in filtered)
         for(var j in i.sessions)
+          if(j['available_capacity']>0 && !centersDone.contains(i.centerName)) {
+            centersDone.add(i.centerName);
+            await flutterLocalNotificationsPlugin.periodicallyShow(
+              0,
+              'Hurry! Slots Available at ${i.centerName}' ,
+              'Available Capacity: ${j['available_capacity']}. Vaccine: ${j['vaccine']}',
+              RepeatInterval.everyMinute,
+              platformChannelSpecifics,
+              payload: 'Test Payload',
+            );
+          }
+
+      /*
           if(j['available_capacity']>0) {
             capacity = j['available_capacity'];
             vaccine = j['vaccine'];
@@ -115,6 +130,8 @@ class LocalNotifyManager {
         platformChannelSpecifics,
         payload: 'Test Payload',
       );
+
+       */
     }
   }
 
@@ -126,7 +143,15 @@ class LocalNotifyManager {
     DistrictAvailability districtAvailability;
     districtAvailabilities.clear();
     List<DistrictAvailability> filtered = [];
-    String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=571&date=14-05-2021";
+
+    var now = new DateTime.now();
+    var formatter = new DateFormat('dd-MM-yyyy');
+    String formattedDate = formatter.format(now);
+
+    final prefs = await SharedPreferences.getInstance();
+    final districtID = prefs.getInt('districtID') ?? 571;
+
+    String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$districtID&date=$formattedDate";
     var response = await http.get(Uri.parse(url));
     var jsonData = jsonDecode(response.body);
 
@@ -149,7 +174,7 @@ class LocalNotifyManager {
     }
     for(var i in districtAvailabilities)
       for(var j in i.sessions) {
-        if(j['min_age_limit']==45 && j['available_capacity']>0)
+        if(j['min_age_limit']==18 && j['available_capacity']>0)
           if(!filtered.contains(i))
             filtered.add(i);
       }
