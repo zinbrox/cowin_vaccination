@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:cowin_vaccination/helpers/notificationsPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -115,12 +115,14 @@ class _HomeState extends State<Home> {
 
         */
       }
-
+      /*
       for(var i in filteredAvailabilities) {
         print(i.centerName);
         for(var j in i.sessions)
           print(j['min_age_limit']);
       }
+      \
+       */
 
       setState(() {
         _hasLoadedCenters=true;
@@ -202,7 +204,18 @@ class _HomeState extends State<Home> {
     void initState() {
       super.initState();
       getStates();
+      localNotifyManager.setListenerForLowerVersions(onNotificationInLowerVersions);
+      localNotifyManager.setOnNotificationClick(onNotificationClick);
+
     }
+
+    onNotificationInLowerVersions(ReceivedNotification receivedNotification) {}
+      Future onNotificationClick(String payload) {
+      print("Pressed Notification");
+      print("Payload: $payload");
+      //Navigator.pushNamed(context, '/article_view',arguments: ScreenArguments(payload));
+    }
+
     @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -214,6 +227,16 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              ElevatedButton(
+                  onPressed: () async {
+                    await localNotifyManager.repeatNotification();
+                    print("Started Notifications");
+              }, child: Text("Start Notifications")),
+              ElevatedButton(
+                  onPressed: (){
+                    localNotifyManager.cancelAllNotification();
+                    print("Cancelled Notifications");
+                  }, child: Text("Cancel Notifications")),
               Container(
                 width: MediaQuery
                     .of(context)
@@ -274,7 +297,7 @@ class _HomeState extends State<Home> {
                   },
                 ),
               ) : Container(),
-              selectedDistrict != null ? ElevatedButton(onPressed: () {
+              selectedDistrict != null ? ElevatedButton(onPressed: () async {
                 getAvailability(districts[selectedDistrict].districtId);
               },
                 child: Text("Search Available Slots"),

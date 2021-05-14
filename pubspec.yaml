@@ -28,6 +28,7 @@ dependencies:
   shared_preferences: ^2.0.5
   provider: ^5.0.0
   path_provider: ^2.0.1
+  rxdart: ^0.27.0
 
 
   # The following adds the Cupertino Icons font to your application.
