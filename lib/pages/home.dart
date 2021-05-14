@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cowin_vaccination/helpers/notificationsPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,7 +44,7 @@ class _HomeState extends State<Home> {
   List<DistrictAvailability> districtAvailabilities = [];
   List<DistrictAvailability> filteredAvailabilities = [];
 
-  bool _loadingStates = true, _hasLoadedCenters=false;
+  bool _loadingStates = true, _hasLoadedCenters=false, notificationSwitch=false;
   String _value1, _value2;
   int selectedState, selectedDistrict;
   int numFilters = 0; // Number of Filters added
@@ -62,6 +63,10 @@ class _HomeState extends State<Home> {
       );
       states.add(state);
     }
+
+    final prefs = await SharedPreferences.getInstance();
+    notificationSwitch = prefs.getBool('notificationSwitch') ?? false;
+
     setState(() {
       _loadingStates=false;
     });
@@ -81,6 +86,7 @@ class _HomeState extends State<Home> {
       );
       districts.add(district);
     }
+
     setState(() {
     });
   }
@@ -192,7 +198,7 @@ class _HomeState extends State<Home> {
         List<dynamic> tempSessions = [];
         for (var j in i.sessions) {
 
-          if ((filterSelected[1] && j['min_age_limit'] == 45))
+          if ((filterSelected[0] && j['min_age_limit'] == 18))
             tempSessions.add(j);
 
           if((filterSelected[1] && j['min_age_limit'] == 45) && !tempSessions.contains(j))
@@ -259,6 +265,45 @@ class _HomeState extends State<Home> {
       return Scaffold(
         appBar: AppBar(
           title: Text("Home"),
+          actions: [
+            IconButton(
+                icon: notificationSwitch? Icon(Icons.notifications_active) : Icon(Icons.notifications_off),
+                onPressed: () async {
+                  if(selectedDistrict==null && notificationSwitch==false)
+                    Fluttertoast.showToast(
+                        msg: "Please select a district first",
+                        toastLength: Toast.LENGTH_LONG,
+                        gravity: ToastGravity.BOTTOM,
+                    );
+                  else {
+                    final prefs = await SharedPreferences.getInstance();
+                    setState(() {
+                      notificationSwitch = !notificationSwitch;
+                    });
+                    if(notificationSwitch) {
+                      prefs.setInt('districtID',
+                          districts[selectedDistrict].districtId);
+                      await localNotifyManager.repeatNotification();
+                      print("Started Notifications");
+                      Fluttertoast.showToast(
+                          msg: "You'll be notified of slots in ${districts[selectedDistrict].districtName}",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                      );
+                    }
+                    else {
+                      localNotifyManager.cancelAllNotification();
+                      print("Cancelled Notifications");
+                      Fluttertoast.showToast(
+                          msg: "Notifications turned off",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                      );
+                    }
+                  }
+
+                }),
+          ],
         ),
         body: _loadingStates ? CircularProgressIndicator() :
         Center(
@@ -326,28 +371,10 @@ class _HomeState extends State<Home> {
                 ),
               ) : Container(),
               selectedDistrict != null ?
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(onPressed: () async {
-                      getAvailability(districts[selectedDistrict].districtId);
-                    },
-                      child: Text("Search Available Slots"),
-                    ),
-                  ),
-                  Expanded(child: ElevatedButton(
-                      onPressed: () async {
-                        final prefs = await SharedPreferences.getInstance();
-                        prefs.setInt('districtID', districts[selectedDistrict].districtId);
-                        await localNotifyManager.repeatNotification();
-                        print("Started Notifications");
-                      }, child: Text("Send Notifications of this District")),),
-                  Expanded(child: ElevatedButton(
-                      onPressed: (){
-                        localNotifyManager.cancelAllNotification();
-                        print("Cancelled Notifications");
-                      }, child: Text("Cancel Notifications")),),
-                ],
+              ElevatedButton(onPressed: () async {
+                getAvailability(districts[selectedDistrict].districtId);
+              },
+                child: Text("Search Available Slots"),
               ) : Container(),
               _hasLoadedCenters ? showFilters() : Container(),
               _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),
