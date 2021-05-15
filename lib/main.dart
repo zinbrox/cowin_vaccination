@@ -23,11 +23,19 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
           fontFamily: GoogleFonts.rubik().fontFamily,
+          textTheme: GoogleFonts.rubikTextTheme(
+            Theme.of(context).textTheme,
+          ),
+          scaffoldBackgroundColor: Colors.black,
       ),
+
       darkTheme: ThemeData(
         brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black,
+        fontFamily: GoogleFonts.rubik().fontFamily,
+        primarySwatch: Colors.deepPurple,
       ),
       themeMode: ThemeMode.dark,
       initialRoute: '/home',

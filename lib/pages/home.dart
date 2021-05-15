@@ -184,11 +184,11 @@ class _HomeState extends State<Home> {
                 child: Align(
                   alignment: Alignment.center,
                   child: Container(
-                    height: 30,
-                    width: MediaQuery.of(context).size.height*0.15,
-                    child: FittedBox(child: Text(filterOptions[index], textAlign: TextAlign.center,), fit: BoxFit.none,),
+                    height: 35,
+                    width: MediaQuery.of(context).size.width*0.3,
+                    child: FittedBox(child: Text(filterOptions[index], textAlign: TextAlign.center, style: TextStyle(fontSize: 18, color: filterSelected[index]? Colors.white : Colors.black),), fit: BoxFit.scaleDown,),
                     decoration: BoxDecoration(
-                      color: filterSelected[index] ? Colors.lightBlueAccent : Colors.white10,
+                      color: filterSelected[index] ? Colors.grey[850] : Colors.white,
                       border: Border.all(
                         color: Colors.black,
                       ),
@@ -293,7 +293,7 @@ class _HomeState extends State<Home> {
     Widget build(BuildContext context) {
       return Scaffold(
         appBar: AppBar(
-          title: Text("Home"),
+          title: Text("Cowin Slot Notifier"),
           actions: [
             IconButton(
                 icon: notificationSwitch? Icon(Icons.notifications_active) : Icon(Icons.notifications_off),
@@ -312,6 +312,7 @@ class _HomeState extends State<Home> {
                       notificationSwitch = !notificationSwitch;
                     });
                     if(notificationSwitch) {
+                      prefs.setBool('notificationSwitch', true);
                       prefs.setInt('districtID',
                           districts[selectedDistrict].districtId);
                       print("Started Notifications");
@@ -325,6 +326,7 @@ class _HomeState extends State<Home> {
                     }
                     else {
                       print("Cancelled Notifications");
+                      prefs.setBool('notificationSwitch', false);
                       Fluttertoast.showToast(
                           msg: "Notifications turned off",
                           toastLength: Toast.LENGTH_SHORT,
@@ -424,19 +426,18 @@ class _HomeState extends State<Home> {
                 child: Container(
                   child: ListView.separated(
                       itemCount: filteredAvailabilities.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 10, child: Divider(thickness: 2, color: Colors.white,),),
+                      separatorBuilder: (context, index) => SizedBox(height: 20,),
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
                           elevation: 1.0,
-                          color: Colors.white10,
+                          color: Colors.grey[850],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Center: " +
-                                  filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                              Text(filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                               Text("Block: " + filteredAvailabilities[index].blockName),
                               Text("Fee Type: " +
                                   filteredAvailabilities[index].feeType),
@@ -487,7 +488,7 @@ class _HomeState extends State<Home> {
                       width: 40,
                         child: Text(item[index]['available_capacity'].toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 20),),
                       decoration: BoxDecoration(
-                        color: item[index]['available_capacity']>40? Colors.green : item[index]['available_capacity']>0? Colors.yellow : Colors.red,
+                        color: item[index]['available_capacity']>40? Colors.green : item[index]['available_capacity']>0? Colors.yellow[800] : Colors.red,
                       ),
                     ),
                     Text(item[index]['vaccine']=="COVAXIN"? item[index]['vaccine'] + "      " : item[index]['vaccine'], style: TextStyle(fontSize: 20),),
