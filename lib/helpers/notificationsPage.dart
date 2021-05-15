@@ -86,27 +86,45 @@ class LocalNotifyManager {
     );
   }
    */
+  int maxProgress = 5;
   Future<void> repeatNotification() async {
-    var androidChannelSpecifics = AndroidNotificationDetails(
-      'CHANNEL_ID 3',
-      'CHANNEL_NAME 3',
-      "CHANNEL_DESCRIPTION 3",
-      importance: Importance.max,
-      priority: Priority.max,
-      styleInformation: DefaultStyleInformation(true, true),
-    );
-    var iosChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics =
-    NotificationDetails(android: androidChannelSpecifics, iOS: iosChannelSpecifics);
-    List<DistrictAvailability> filtered = await getAvailabilities();
-    int capacity; String vaccine, center;
-    List<String> centersDone = [];
-    if(filtered.length>0) {
-      for(var i in filtered) {
-        i.sessions.sort((a,b) => b['available_capacity'].compareTo(a['available_capacity']));
-      }
-      filtered.sort((a,b) => b.sessions[0]['available_capacity'].compareTo(a.sessions[0]['available_capacity']));
-      /*
+    final prefs = await SharedPreferences.getInstance();
+    if(prefs.getInt('districtID')==0 || prefs.getInt('districtID')==null)
+      maxProgress=-1;
+    else
+      maxProgress=5;
+    print(maxProgress);
+    while(maxProgress>0) {
+      if(prefs.getInt('districtID')==0 || prefs.getInt('districtID')==null)
+        maxProgress=-1;
+      else
+        maxProgress=5;
+      await Future<void>.delayed(const Duration(seconds: 10), () async {
+        var androidChannelSpecifics = AndroidNotificationDetails(
+          'CHANNEL_ID 3',
+          'CHANNEL_NAME 3',
+          "CHANNEL_DESCRIPTION 3",
+          importance: Importance.max,
+          priority: Priority.max,
+          styleInformation: DefaultStyleInformation(true, true),
+        );
+        var iosChannelSpecifics = IOSNotificationDetails();
+        var platformChannelSpecifics =
+        NotificationDetails(
+            android: androidChannelSpecifics, iOS: iosChannelSpecifics);
+        List<DistrictAvailability> filtered = await getAvailabilities();
+        int capacity;
+        String vaccine, center;
+        List<String> centersDone = [];
+        if (filtered.length > 0) {
+          for (var i in filtered) {
+            i.sessions.sort((a, b) =>
+                b['available_capacity'].compareTo(a['available_capacity']));
+          }
+          filtered.sort((a, b) =>
+              b.sessions[0]['available_capacity'].compareTo(
+                  a.sessions[0]['available_capacity']));
+          /*
       for(var i in filtered)
         for(var j in i.sessions)
 
@@ -125,22 +143,25 @@ class LocalNotifyManager {
            */
 
 
+          capacity = filtered[0].sessions[0]['available_capacity'];
+          vaccine = filtered[0].sessions[0]['vaccine'];
+          center = filtered[0].centerName;
 
-            capacity = filtered[0].sessions[0]['available_capacity'];
-            vaccine = filtered[0].sessions[0]['vaccine'];
-            center = filtered[0].centerName;
+          await flutterLocalNotificationsPlugin.show(
+            0,
+            'Hurry! Slots Available at $center',
+            'Available Capacity: $capacity. Vaccine: $vaccine',
+           //RepeatInterval.everyMinute,
+            platformChannelSpecifics,
+            payload: 'Test Payload',
 
-      await flutterLocalNotificationsPlugin.periodicallyShow(
-        0,
-        'Hurry! Slots Available at $center' ,
-        'Available Capacity: $capacity. Vaccine: $vaccine',
-        RepeatInterval.everyMinute,
-        platformChannelSpecifics,
-        payload: 'Test Payload',
-      );
-
-
+          );
+        }
+      });
     }
+
+
+
   }
 
 
@@ -148,6 +169,7 @@ class LocalNotifyManager {
 
 
   Future<List<DistrictAvailability>> getAvailabilities() async {
+    print("In getAvailabilities");
     DistrictAvailability districtAvailability;
     districtAvailabilities.clear();
     List<DistrictAvailability> filtered = [];
@@ -158,7 +180,6 @@ class LocalNotifyManager {
 
     final prefs = await SharedPreferences.getInstance();
     final districtID = prefs.getInt('districtID') ?? 571;
-
 
 
     String url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$districtID&date=$formattedDate";
@@ -184,10 +205,11 @@ class LocalNotifyManager {
     }
     for(var i in districtAvailabilities)
       for(var j in i.sessions) {
-        if(j['min_age_limit']==18 && j['available_capacity']>0)
+        if(j['min_age_limit']==45 && j['available_capacity']>0)
           if(!filtered.contains(i))
             filtered.add(i);
       }
+    print(filtered.length);
     return filtered;
 
   }

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:isolate';
+import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:cowin_vaccination/helpers/notificationsPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -149,9 +151,7 @@ class _HomeState extends State<Home> {
         child: ListView.separated(
           itemCount: filterOptions.length,
             scrollDirection: Axis.horizontal,
-            separatorBuilder: (context, index) => Divider(
-              color: Colors.red,
-            ),
+            separatorBuilder: (context, index) => SizedBox(width: 10,),
             itemBuilder: (BuildContext context, int index){
               return InkWell(
                 onTap: (){
@@ -172,7 +172,7 @@ class _HomeState extends State<Home> {
                     width: MediaQuery.of(context).size.height*0.15,
                     child: FittedBox(child: Text(filterOptions[index], textAlign: TextAlign.center,), fit: BoxFit.none,),
                     decoration: BoxDecoration(
-                      color: filterSelected[index] ? Colors.blue : Colors.black12,
+                      color: filterSelected[index] ? Colors.lightBlueAccent : Colors.white10,
                       border: Border.all(
                         color: Colors.black,
                       ),
@@ -250,8 +250,23 @@ class _HomeState extends State<Home> {
       getStates();
       localNotifyManager.setListenerForLowerVersions(onNotificationInLowerVersions);
       localNotifyManager.setOnNotificationClick(onNotificationClick);
-
     }
+
+
+  void runAlarm() {
+    AndroidAlarmManager.oneShot(
+      Duration(seconds: 10),
+      0,
+      printHello,
+      wakeup: true,
+    ).then((val) => print(val));
+  }
+
+  void printHello() {
+    final DateTime now = DateTime.now();
+    final int isolateId = Isolate.current.hashCode;
+    print("[$now] Hello, world! isolate=${isolateId} function='$printHello'");
+  }
 
     onNotificationInLowerVersions(ReceivedNotification receivedNotification) {}
       Future onNotificationClick(String payload) {
@@ -269,6 +284,9 @@ class _HomeState extends State<Home> {
             IconButton(
                 icon: notificationSwitch? Icon(Icons.notifications_active) : Icon(Icons.notifications_off),
                 onPressed: () async {
+                  final int helloAlarmID = 0;
+                  await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
+                  /*
                   if(selectedDistrict==null && notificationSwitch==false)
                     Fluttertoast.showToast(
                         msg: "Please select a district first",
@@ -292,15 +310,18 @@ class _HomeState extends State<Home> {
                       );
                     }
                     else {
-                      localNotifyManager.cancelAllNotification();
                       print("Cancelled Notifications");
                       Fluttertoast.showToast(
                           msg: "Notifications turned off",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                       );
+                      prefs.setInt('districtID',
+                          0);
+                      localNotifyManager.cancelAllNotification();
                     }
                   }
+                  */
 
                 }),
           ],
@@ -380,14 +401,16 @@ class _HomeState extends State<Home> {
               _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),
               _hasLoadedCenters ? Expanded(
                 child: Container(
-                  child: ListView.builder(
+                  child: ListView.separated(
                       itemCount: filteredAvailabilities.length,
+                      separatorBuilder: (context, index) => SizedBox(height: 10, child: Divider(thickness: 2, color: Colors.white,),),
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(5),
                           ),
-                          elevation: 4.0,
+                          elevation: 1.0,
+                          color: Colors.white10,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -399,17 +422,19 @@ class _HomeState extends State<Home> {
                               Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo),
                               Text("Address: " +
                                   filteredAvailabilities[index].centerAddress),
+                              /*
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                 Expanded(child: Text("Date: ", style: TextStyle(fontSize: 20),),),
-                                Expanded(child: Text("Available Slots: ", style: TextStyle(fontSize: 20),),),
+                                Expanded(child: Text("Available: ", style: TextStyle(fontSize: 20),),),
                                 Expanded(child: Text("Vaccine: ", style: TextStyle(fontSize: 20),),),
-                                Expanded(child: Text("Min Age Limit: ", style: TextStyle(fontSize: 20),)),
+                                Expanded(child: Text("Min Age: ", style: TextStyle(fontSize: 20),)),
                               ],
                               ),
+                               */
+                              Divider(thickness: 3,),
                               _returnSessions(filteredAvailabilities[index].sessions),
-
                             ],
                           ),
                         );
@@ -430,7 +455,7 @@ class _HomeState extends State<Home> {
             itemCount: item.length,
             physics: ClampingScrollPhysics(),
             shrinkWrap: true,
-            separatorBuilder: (context, index) => Divider(thickness: 5,),
+            separatorBuilder: (context, index) => Divider(thickness: 3,),
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 child: Row(
@@ -441,7 +466,7 @@ class _HomeState extends State<Home> {
                       width: 40,
                         child: Text(item[index]['available_capacity'].toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 20),),
                       decoration: BoxDecoration(
-                        color: item[index]['available_capacity']>100? Colors.green : item[index]['available_capacity']>0? Colors.yellow : Colors.red,
+                        color: item[index]['available_capacity']>40? Colors.green : item[index]['available_capacity']>0? Colors.yellow : Colors.red,
                       ),
                     ),
                     Text(item[index]['vaccine']=="COVAXIN"? item[index]['vaccine'] + "      " : item[index]['vaccine'], style: TextStyle(fontSize: 20),),
