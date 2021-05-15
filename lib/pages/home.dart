@@ -35,6 +35,22 @@ class DistrictAvailability{
   this.long, this.feeType, this.timeFrom, this.timeTo, this.date, this.slots, this.sessions});
 }
 
+/*
+void printHello() {
+  final DateTime now = DateTime.now();
+  final int isolateId = Isolate.current.hashCode;
+  print("Hello $now");
+  //print("[$now] Hello, world! isolate=${isolateId} function='$printHello'");
+}
+ */
+
+void callNotification() {
+  print("In callNotification");
+  localNotifyManager.repeatNotification();
+}
+
+
+
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
@@ -253,6 +269,7 @@ class _HomeState extends State<Home> {
     }
 
 
+    /*
   void runAlarm() {
     AndroidAlarmManager.oneShot(
       Duration(seconds: 10),
@@ -262,11 +279,8 @@ class _HomeState extends State<Home> {
     ).then((val) => print(val));
   }
 
-  void printHello() {
-    final DateTime now = DateTime.now();
-    final int isolateId = Isolate.current.hashCode;
-    print("[$now] Hello, world! isolate=${isolateId} function='$printHello'");
-  }
+     */
+
 
     onNotificationInLowerVersions(ReceivedNotification receivedNotification) {}
       Future onNotificationClick(String payload) {
@@ -284,9 +298,8 @@ class _HomeState extends State<Home> {
             IconButton(
                 icon: notificationSwitch? Icon(Icons.notifications_active) : Icon(Icons.notifications_off),
                 onPressed: () async {
-                  final int helloAlarmID = 0;
-                  await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
-                  /*
+                  //AndroidAlarmManager.oneShot(const Duration(seconds: 1), 0, printHello);
+
                   if(selectedDistrict==null && notificationSwitch==false)
                     Fluttertoast.showToast(
                         msg: "Please select a district first",
@@ -301,13 +314,14 @@ class _HomeState extends State<Home> {
                     if(notificationSwitch) {
                       prefs.setInt('districtID',
                           districts[selectedDistrict].districtId);
-                      await localNotifyManager.repeatNotification();
                       print("Started Notifications");
                       Fluttertoast.showToast(
-                          msg: "You'll be notified of slots in ${districts[selectedDistrict].districtName}",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
+                        msg: "You'll be notified of slots in ${districts[selectedDistrict].districtName}",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
                       );
+                      //AndroidAlarmManager.oneShot(const Duration(seconds: 1), 0, )
+                      AndroidAlarmManager.periodic(const Duration(seconds: 60), 0, callNotification);
                     }
                     else {
                       print("Cancelled Notifications");
@@ -316,12 +330,13 @@ class _HomeState extends State<Home> {
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                       );
-                      prefs.setInt('districtID',
-                          0);
+                      prefs.setInt('districtID',0);
                       localNotifyManager.cancelAllNotification();
+                      AndroidAlarmManager.cancel(0);
                     }
                   }
-                  */
+
+
 
                 }),
           ],
@@ -393,6 +408,12 @@ class _HomeState extends State<Home> {
               ) : Container(),
               selectedDistrict != null ?
               ElevatedButton(onPressed: () async {
+               for(int i=0;i<filterSelected.length;++i)
+                 filterSelected[i]=false;
+               numFilters=0;
+               setState(() {
+               });
+                print(filterSelected);
                 getAvailability(districts[selectedDistrict].districtId);
               },
                 child: Text("Search Available Slots"),

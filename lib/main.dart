@@ -6,18 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 main() async {
-  //WidgetsFlutterBinding.ensureInitialized();
-  //final int helloAlarmID = 0;
-  //await AndroidAlarmManager.initialize();
+  WidgetsFlutterBinding.ensureInitialized();
+  await AndroidAlarmManager.initialize();
   runApp(MyApp());
-  //await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
 }
 
-void printHello() {
-  final DateTime now = DateTime.now();
-  final int isolateId = Isolate.current.hashCode;
-  print("[$now] Hello, world! isolate=${isolateId} function='$printHello'");
-}
 
 class MyApp extends StatefulWidget {
   // This widget is the root of your application.

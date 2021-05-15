@@ -88,25 +88,26 @@ class LocalNotifyManager {
    */
   int maxProgress = 5;
   Future<void> repeatNotification() async {
-    final prefs = await SharedPreferences.getInstance();
-    if(prefs.getInt('districtID')==0 || prefs.getInt('districtID')==null)
-      maxProgress=-1;
-    else
-      maxProgress=5;
+    print("In repeatNotification");
+    //final prefs = await SharedPreferences.getInstance();
     print(maxProgress);
-    while(maxProgress>0) {
+    //while(maxProgress>0) {
+
+      /*
       if(prefs.getInt('districtID')==0 || prefs.getInt('districtID')==null)
         maxProgress=-1;
       else
         maxProgress=5;
-      await Future<void>.delayed(const Duration(seconds: 10), () async {
+       */
+
+      //await Future<void>.delayed(const Duration(seconds: 10), () async {
         var androidChannelSpecifics = AndroidNotificationDetails(
           'CHANNEL_ID 3',
           'CHANNEL_NAME 3',
           "CHANNEL_DESCRIPTION 3",
           importance: Importance.max,
           priority: Priority.max,
-          styleInformation: DefaultStyleInformation(true, true),
+          styleInformation: BigTextStyleInformation(''),
         );
         var iosChannelSpecifics = IOSNotificationDetails();
         var platformChannelSpecifics =
@@ -157,8 +158,8 @@ class LocalNotifyManager {
 
           );
         }
-      });
-    }
+      //});
+    //}
 
 
 
@@ -205,7 +206,7 @@ class LocalNotifyManager {
     }
     for(var i in districtAvailabilities)
       for(var j in i.sessions) {
-        if(j['min_age_limit']==45 && j['available_capacity']>0)
+        if(j['min_age_limit']==18 && j['available_capacity']>0)
           if(!filtered.contains(i))
             filtered.add(i);
       }
