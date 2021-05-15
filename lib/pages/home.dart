@@ -188,7 +188,7 @@ class _HomeState extends State<Home> {
                     width: MediaQuery.of(context).size.width*0.3,
                     child: FittedBox(child: Text(filterOptions[index], textAlign: TextAlign.center, style: TextStyle(fontSize: 18, color: filterSelected[index]? Colors.white : Colors.black),), fit: BoxFit.scaleDown,),
                     decoration: BoxDecoration(
-                      color: filterSelected[index] ? Colors.grey[850] : Colors.white,
+                      color: filterSelected[index] ? Colors.deepPurple : Colors.white,
                       border: Border.all(
                         color: Colors.black,
                       ),
@@ -418,6 +418,11 @@ class _HomeState extends State<Home> {
                 print(filterSelected);
                 getAvailability(districts[selectedDistrict].districtId);
               },
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32.0),
+                  ),
+                ),
                 child: Text("Search Available Slots"),
               ) : Container(),
               _hasLoadedCenters ? showFilters() : Container(),
@@ -426,7 +431,9 @@ class _HomeState extends State<Home> {
                 child: Container(
                   child: ListView.separated(
                       itemCount: filteredAvailabilities.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 20,),
+                      separatorBuilder: (context, index) => SizedBox(height: 15,),
+                      physics: ClampingScrollPhysics(),
+                      shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           shape: RoundedRectangleBorder(
@@ -435,28 +442,21 @@ class _HomeState extends State<Home> {
                           elevation: 1.0,
                           color: Colors.grey[850],
                           child: Column(
+                            mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                              SizedBox(height: 10,),
                               Text("Block: " + filteredAvailabilities[index].blockName),
                               Text("Fee Type: " +
                                   filteredAvailabilities[index].feeType),
                               Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo),
                               Text("Address: " +
                                   filteredAvailabilities[index].centerAddress),
-                              /*
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                Expanded(child: Text("Date: ", style: TextStyle(fontSize: 20),),),
-                                Expanded(child: Text("Available: ", style: TextStyle(fontSize: 20),),),
-                                Expanded(child: Text("Vaccine: ", style: TextStyle(fontSize: 20),),),
-                                Expanded(child: Text("Min Age: ", style: TextStyle(fontSize: 20),)),
-                              ],
-                              ),
-                               */
+                              SizedBox(height: 10,),
                               Divider(thickness: 3,),
                               _returnSessions(filteredAvailabilities[index].sessions),
+                              SizedBox(height: 10,),
                             ],
                           ),
                         );
