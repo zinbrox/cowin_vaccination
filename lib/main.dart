@@ -34,16 +34,44 @@ class _MyAppState extends State<MyApp> {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
-        fontFamily: GoogleFonts.rubik().fontFamily,
+        fontFamily: GoogleFonts.raleway().fontFamily,
         primarySwatch: Colors.deepPurple,
       ),
       themeMode: ThemeMode.dark,
-      initialRoute: '/home',
+      initialRoute: '/splash',
       routes: {
+        '/splash':(context) => SplashScreen(),
         '/home':(context) => Home(),
         }
     );
   }
 }
+
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  
+  void wait() {
+    Future.delayed(const Duration(seconds: 3), () async {
+      Navigator.pushReplacementNamed(context, '/home');
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    wait();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(child: Image(image: AssetImage(("assets/SlotNotifierLogo.png")),),),
+    );
+  }
+}
+
 
 

@@ -102,9 +102,9 @@ class LocalNotifyManager {
 
       //await Future<void>.delayed(const Duration(seconds: 10), () async {
         var androidChannelSpecifics = AndroidNotificationDetails(
-          'CHANNEL_ID 3',
-          'CHANNEL_NAME 3',
-          "CHANNEL_DESCRIPTION 3",
+          'CHANNEL_ID 1',
+          'Slot Availability',
+          "Notifications about Slot Availabilities",
           importance: Importance.max,
           priority: Priority.max,
           styleInformation: BigTextStyleInformation(''),

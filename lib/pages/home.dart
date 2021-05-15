@@ -9,8 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-List<String> filterOptions = ["18+", "45+", "COVISHIELD", "COVAXIN", "Paid", "Free"];
-List<bool> filterSelected = [false, false, false, false, false, false];
+List<String> filterOptions = ["18+", "45+", "COVISHIELD", "COVAXIN", "SPUTNIK V", "Paid", "Free"];
+List<bool> filterSelected = [false, false, false, false, false, false, false];
 
 class States{
   int stateId;
@@ -139,13 +139,13 @@ class _HomeState extends State<Home> {
 
 
       districtAvailabilities.add(districtAvailability);
-      filteredAvailabilities.add(districtAvailability);
       /*
       for(var x in districtAvailability.sessions)
         print(x.date);
 
         */
       }
+     filteredAvailabilities = districtAvailabilities;
       /*
       for(var i in filteredAvailabilities) {
         print(i.centerName);
@@ -208,14 +208,19 @@ class _HomeState extends State<Home> {
     print("In filterChange");
     List<DistrictAvailability> newFiltered = [];
     DistrictAvailability tempAvailability;
+    int sessionFilters = 0;
+    for(int i=0;i<5;++i)
+      if(filterSelected[i])
+        sessionFilters++;
 
       print(districtAvailabilities.length);
       for(var i in districtAvailabilities) {
         List<dynamic> tempSessions = [];
         for (var j in i.sessions) {
 
-          if ((filterSelected[0] && j['min_age_limit'] == 18))
+          if ((filterSelected[0] && j['min_age_limit'] == 18) && !tempSessions.contains(j))
             tempSessions.add(j);
+
 
           if((filterSelected[1] && j['min_age_limit'] == 45) && !tempSessions.contains(j))
             tempSessions.add(j);
@@ -233,24 +238,39 @@ class _HomeState extends State<Home> {
             tempSessions.remove(j);
 
 
+          if((filterSelected[4] && j['vaccine'] == "SPUTNIK V") && !tempSessions.contains(j))
+            tempSessions.add(j);
+          else if((filterSelected[4] && j['vaccine'] != "SPUTNIK V") && tempSessions.contains(j))
+            tempSessions.remove(j);
+
+
+
+
 
         }
         tempAvailability=i;
-        if(tempSessions.isEmpty)
+        //print(filtersEnabled);
+
+        if(tempSessions.isEmpty && sessionFilters!=0)
           continue;
-        tempAvailability.sessions=tempSessions;
+        else if(tempSessions.isEmpty && sessionFilters==0)
+          tempAvailability=i;
+        else
+          tempAvailability.sessions=tempSessions;
         newFiltered.add(tempAvailability);
-        if((filterSelected[4] && tempAvailability.feeType == "Paid") && !newFiltered.contains(tempAvailability))
+        //print(newFiltered.length);
+        if((filterSelected[5] && tempAvailability.feeType == "Paid") && !newFiltered.contains(tempAvailability))
           newFiltered.add(tempAvailability);
-        else if((filterSelected[4] && tempAvailability.feeType != "Paid") && newFiltered.contains(tempAvailability))
+        else if((filterSelected[5] && tempAvailability.feeType != "Paid") && newFiltered.contains(tempAvailability))
           newFiltered.remove(tempAvailability);
-        if((filterSelected[5] && tempAvailability.feeType == "Free") && !newFiltered.contains(tempAvailability))
+        if((filterSelected[6] && tempAvailability.feeType == "Free") && !newFiltered.contains(tempAvailability))
           newFiltered.add(tempAvailability);
-        else if((filterSelected[5] && tempAvailability.feeType != "Free") && newFiltered.contains(tempAvailability))
+        else if((filterSelected[6] && tempAvailability.feeType != "Free") && newFiltered.contains(tempAvailability))
           newFiltered.remove(tempAvailability);
       }
 
         filteredAvailabilities=newFiltered;
+      print(filteredAvailabilities.length);
       //print(filteredAvailabilities);
       if(numFilters==0)
         filteredAvailabilities=districtAvailabilities;
@@ -343,7 +363,7 @@ class _HomeState extends State<Home> {
                 }),
           ],
         ),
-        body: _loadingStates ? CircularProgressIndicator() :
+        body: _loadingStates ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple))) :
         Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -355,13 +375,14 @@ class _HomeState extends State<Home> {
                     .width * 0.5,
                 child: DropdownButton<String>(
                   isExpanded: true,
+                  itemHeight: 50,
                   value: _value1,
-                  hint: Text("Select State"),
+                  hint: Text("Select State", style: TextStyle(fontSize: 20),),
                   underline: Container(),
                   items: states.map<DropdownMenuItem<String>>((var value) {
                     return DropdownMenuItem<String>(
                       value: value.stateName,
-                      child: Text(value.stateName),
+                      child: Text(value.stateName, style: TextStyle(fontSize: 20),),
                     );
                   }).toList(),
                   onChanged: (String value) {
@@ -389,13 +410,13 @@ class _HomeState extends State<Home> {
                 child: DropdownButton<String>(
                   isExpanded: true,
                   value: _value2,
-                  hint: Text("Select District"),
+                  hint: Text("Select District", style: TextStyle(fontSize: 20),),
 
                   underline: Container(),
                   items: districts.map<DropdownMenuItem<String>>((var value) {
                     return DropdownMenuItem<String>(
                       value: value.districtName,
-                      child: Text(value.districtName),
+                      child: Text(value.districtName, style: TextStyle(fontSize: 20),),
                     );
                   }).toList(),
                   onChanged: (String value) {
@@ -423,7 +444,7 @@ class _HomeState extends State<Home> {
                     borderRadius: BorderRadius.circular(32.0),
                   ),
                 ),
-                child: Text("Search Available Slots"),
+                child: Text("Search Available Slots", style: TextStyle(fontSize: 20),),
               ) : Container(),
               _hasLoadedCenters ? showFilters() : Container(),
               _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),
