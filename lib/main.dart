@@ -1,5 +1,5 @@
 import 'dart:isolate';
-
+import 'package:flutter/services.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:cowin_vaccination/pages/home.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AndroidAlarmManager.initialize();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(MyApp());
 }
 
@@ -63,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    //wait();
+    wait();
   }
   @override
   Widget build(BuildContext context) {
