@@ -429,7 +429,7 @@ class _HomeState extends State<Home> {
                             borderRadius: BorderRadius.circular(5),
                           ),
                           elevation: 1.0,
-                          color: Colors.grey[850],
+                          color: Colors.grey[900],
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,

@@ -34,7 +34,7 @@ class LocalNotifyManager {
   }
 
   initializePlatformSpecifics() {
-    var initSettingAndroid = new AndroidInitializationSettings('launcher_icon');
+    var initSettingAndroid = new AndroidInitializationSettings('notification_icon_logo');
     var initSettingsIOS = IOSInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
