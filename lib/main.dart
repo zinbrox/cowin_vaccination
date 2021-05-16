@@ -68,7 +68,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Image(image: AssetImage(("assets/SlotNotifierLogo.PNG")),),),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: Image(image: AssetImage(("assets/SlotNotifierLogo.PNG")),)),
+            Text("zinbrox", style: TextStyle(fontSize: 20, decoration: TextDecoration.overline),),
+            SizedBox(height: 20,)
+          ],
+        ),),
     );
   }
 }

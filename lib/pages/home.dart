@@ -317,6 +317,7 @@ class _HomeState extends State<Home> {
     Widget build(BuildContext context) {
       return Scaffold(
         appBar: AppBar(
+
           title: Text("Cowin Slot Notifier"),
           actions: [
             IconButton(
@@ -329,6 +330,9 @@ class _HomeState extends State<Home> {
                         msg: "Please select a district first",
                         toastLength: Toast.LENGTH_LONG,
                         gravity: ToastGravity.BOTTOM,
+                        backgroundColor: Colors.white,
+                        textColor: Colors.black,
+                        fontSize: 16.0
                     );
                   else {
                     final prefs = await SharedPreferences.getInstance();
@@ -344,6 +348,9 @@ class _HomeState extends State<Home> {
                         msg: "You'll be notified of slots in ${districts[selectedDistrict].districtName}",
                         toastLength: Toast.LENGTH_LONG,
                         gravity: ToastGravity.BOTTOM,
+                        backgroundColor: Colors.white,
+                        textColor: Colors.black,
+                          fontSize: 16.0
                       );
                       //AndroidAlarmManager.oneShot(const Duration(seconds: 1), 0, )
                       AndroidAlarmManager.periodic(const Duration(seconds: 60), 0, callNotification);
@@ -355,6 +362,9 @@ class _HomeState extends State<Home> {
                           msg: "Notifications turned off",
                           toastLength: Toast.LENGTH_LONG,
                           gravity: ToastGravity.BOTTOM,
+                        backgroundColor: Colors.white,
+                        textColor: Colors.black,
+                          fontSize: 16.0
                       );
                       prefs.setInt('districtID',0);
                       localNotifyManager.cancelAllNotification();
