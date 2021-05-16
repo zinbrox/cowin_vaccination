@@ -63,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    wait();
+    //wait();
   }
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,14 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(child: Image(image: AssetImage(("assets/SlotNotifierLogo.PNG")),)),
+            Expanded(child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image(image: AssetImage("assets/SlotNotifierLogo.png"), height: 200,),
+                SizedBox(height: 20,),
+                Text("Slot Notifier", style: TextStyle(fontSize: 30, color: Colors.deepPurple),)
+              ],
+            )),
             Text("zinbrox", style: TextStyle(fontSize: 20, decoration: TextDecoration.overline),),
             SizedBox(height: 20,)
           ],
