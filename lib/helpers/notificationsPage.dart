@@ -34,7 +34,7 @@ class LocalNotifyManager {
   }
 
   initializePlatformSpecifics() {
-    var initSettingAndroid = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initSettingAndroid = new AndroidInitializationSettings('launcher_icon');
     var initSettingsIOS = IOSInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -61,46 +61,8 @@ class LocalNotifyManager {
     });
   }
 
-  /*
-  Future<void> showNotification() async {
-    var androidChannelSpecifics = AndroidNotificationDetails(
-        'CHANNEL_ID',
-        'CHANNEL_NAME',
-        'CHANNEL_DESCRIPTION',
-      importance: Importance.max,
-      priority: Priority.max,
-      playSound: true,
-      styleInformation: BigTextStyleInformation(''),
-    );
-    var iosChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics =
-    NotificationDetails(
-        android: androidChannelSpecifics, iOS: iosChannelSpecifics);
-    //await getCustomKeywords();
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'Test Title', //title,
-      'Test Description', //description, //null
-      platformChannelSpecifics,
-      payload: 'New Payload', //articleURL,
-    );
-  }
-   */
-  int maxProgress = 5;
   Future<void> repeatNotification() async {
     print("In repeatNotification");
-    //final prefs = await SharedPreferences.getInstance();
-    print(maxProgress);
-    //while(maxProgress>0) {
-
-      /*
-      if(prefs.getInt('districtID')==0 || prefs.getInt('districtID')==null)
-        maxProgress=-1;
-      else
-        maxProgress=5;
-       */
-
-      //await Future<void>.delayed(const Duration(seconds: 10), () async {
         var androidChannelSpecifics = AndroidNotificationDetails(
           'CHANNEL_ID 1',
           'Slot Availability',
@@ -117,7 +79,7 @@ class LocalNotifyManager {
         List<DistrictAvailability> filtered = await getAvailabilities();
         int capacity;
         String vaccine, center;
-        List<String> centersDone = [];
+        // Sort sessions so the one with most available is at top
         if (filtered.length > 0) {
           for (var i in filtered) {
             i.sessions.sort((a, b) =>
@@ -126,24 +88,6 @@ class LocalNotifyManager {
           filtered.sort((a, b) =>
               b.sessions[0]['available_capacity'].compareTo(
                   a.sessions[0]['available_capacity']));
-          /*
-      for(var i in filtered)
-        for(var j in i.sessions)
-
-          if(j['available_capacity']>0 && !centersDone.contains(i.centerName)) {
-            centersDone.add(i.centerName);
-            await flutterLocalNotificationsPlugin.periodicallyShow(
-              0,
-              'Hurry! Slots Available at ${i.centerName}' ,
-              'Available Capacity: ${j['available_capacity']}. Vaccine: ${j['vaccine']}',
-              RepeatInterval.everyMinute,
-              platformChannelSpecifics,
-              payload: 'Test Payload',
-            );
-          }
-
-           */
-
 
           capacity = filtered[0].sessions[0]['available_capacity'];
           vaccine = filtered[0].sessions[0]['vaccine'];
@@ -153,17 +97,11 @@ class LocalNotifyManager {
             0,
             'Hurry! Slots Available at $center',
             'Available Capacity: $capacity. Vaccine: $vaccine',
-           //RepeatInterval.everyMinute,
             platformChannelSpecifics,
             payload: 'Test Payload',
 
           );
         }
-      //});
-    //}
-
-
-
   }
 
 

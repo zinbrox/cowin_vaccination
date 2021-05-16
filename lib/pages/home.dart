@@ -35,21 +35,11 @@ class DistrictAvailability{
   this.long, this.feeType, this.timeFrom, this.timeTo, this.date, this.slots, this.sessions});
 }
 
-/*
-void printHello() {
-  final DateTime now = DateTime.now();
-  final int isolateId = Isolate.current.hashCode;
-  print("Hello $now");
-  //print("[$now] Hello, world! isolate=${isolateId} function='$printHello'");
-}
- */
 
 void callNotification() {
   print("In callNotification");
   localNotifyManager.repeatNotification();
 }
-
-
 
 class Home extends StatefulWidget {
   @override
@@ -139,22 +129,8 @@ class _HomeState extends State<Home> {
 
 
       districtAvailabilities.add(districtAvailability);
-      /*
-      for(var x in districtAvailability.sessions)
-        print(x.date);
-
-        */
       }
      filteredAvailabilities = districtAvailabilities;
-      /*
-      for(var i in filteredAvailabilities) {
-        print(i.centerName);
-        for(var j in i.sessions)
-          print(j['min_age_limit']);
-      }
-      \
-       */
-
       setState(() {
         _hasLoadedCenters=true;
       });
@@ -226,8 +202,6 @@ class _HomeState extends State<Home> {
 
           if((filterSelected[1] && j['min_age_limit'] == 45) && !tempSessions.contains(j))
             tempSessions.add(j);
-          //else if((filterSelected[1] && j['min_age_limit'] != 45) && tempSessions.contains(j))
-            //tempSessions.remove(j);
 
           if((filterSelected[2] && j['vaccine'] == "COVISHIELD") && !tempSessions.contains(j)) {
             if ((filterSelected[0] && j['min_age_limt'] == 18) || (filterSelected[1] && j['min_age_limit'] == 45) || (!(filterSelected[0] || filterSelected[1])))
@@ -253,7 +227,6 @@ class _HomeState extends State<Home> {
 
         }
         tempAvailability=i;
-        //print(filtersEnabled);
 
         if(tempSessions.isEmpty && sessionFilters!=0)
           continue;
@@ -262,7 +235,6 @@ class _HomeState extends State<Home> {
         else
           tempAvailability.sessions=tempSessions;
         newFiltered.add(tempAvailability);
-        //print(newFiltered.length);
         if((filterSelected[5] && tempAvailability.feeType == "Paid") && !newFiltered.contains(tempAvailability))
           newFiltered.add(tempAvailability);
         else if((filterSelected[5] && tempAvailability.feeType != "Paid") && newFiltered.contains(tempAvailability))
@@ -275,10 +247,8 @@ class _HomeState extends State<Home> {
 
         filteredAvailabilities=newFiltered;
       print(filteredAvailabilities.length);
-      //print(filteredAvailabilities);
       if(numFilters==0)
         filteredAvailabilities=districtAvailabilities;
-      //print(districtAvailabilities);
       setState(() {
         _hasLoadedCenters=true;
       });
@@ -293,24 +263,10 @@ class _HomeState extends State<Home> {
     }
 
 
-    /*
-  void runAlarm() {
-    AndroidAlarmManager.oneShot(
-      Duration(seconds: 10),
-      0,
-      printHello,
-      wakeup: true,
-    ).then((val) => print(val));
-  }
-
-     */
-
-
     onNotificationInLowerVersions(ReceivedNotification receivedNotification) {}
       Future onNotificationClick(String payload) {
       print("Pressed Notification");
       print("Payload: $payload");
-      //Navigator.pushNamed(context, '/article_view',arguments: ScreenArguments(payload));
     }
 
     @override
@@ -323,8 +279,6 @@ class _HomeState extends State<Home> {
             IconButton(
                 icon: notificationSwitch? Icon(Icons.notifications_active) : Icon(Icons.notifications_off),
                 onPressed: () async {
-                  //AndroidAlarmManager.oneShot(const Duration(seconds: 1), 0, printHello);
-
                   if(selectedDistrict==null && notificationSwitch==false)
                     Fluttertoast.showToast(
                         msg: "Please select a district first",
