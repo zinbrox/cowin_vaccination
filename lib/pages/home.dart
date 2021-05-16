@@ -220,32 +220,36 @@ class _HomeState extends State<Home> {
 
           if ((filterSelected[0] && j['min_age_limit'] == 18) && !tempSessions.contains(j))
             tempSessions.add(j);
+          else if((filterSelected[0] && j['min_age_limit'] != 18) && tempSessions.contains(j))
+            tempSessions.remove(j);
 
 
           if((filterSelected[1] && j['min_age_limit'] == 45) && !tempSessions.contains(j))
             tempSessions.add(j);
-          else if((filterSelected[1] && j['min_age_limit'] != 45) && tempSessions.contains(j))
+          //else if((filterSelected[1] && j['min_age_limit'] != 45) && tempSessions.contains(j))
+            //tempSessions.remove(j);
+
+          if((filterSelected[2] && j['vaccine'] == "COVISHIELD") && !tempSessions.contains(j)) {
+            if ((filterSelected[0] && j['min_age_limt'] == 18) || (filterSelected[1] && j['min_age_limit'] == 45) || (!(filterSelected[0] || filterSelected[1])))
+              tempSessions.add(j);
+          }
+          else if((filterSelected[2] && j['vaccine'] != "COVISHIELD") && tempSessions.contains(j) && !filterSelected[3] && !filterSelected[4])
             tempSessions.remove(j);
 
-          if((filterSelected[2] && j['vaccine'] == "COVISHIELD") && !tempSessions.contains(j))
-            tempSessions.add(j);
-          else if((filterSelected[2] && j['vaccine'] != "COVISHIELD") && tempSessions.contains(j))
-            tempSessions.remove(j);
-
-          if((filterSelected[3] && j['vaccine'] == "COVAXIN") && !tempSessions.contains(j))
-            tempSessions.add(j);
-          else if((filterSelected[3] && j['vaccine'] != "COVAXIN") && tempSessions.contains(j))
+          if((filterSelected[3] && j['vaccine'] == "COVAXIN") && !tempSessions.contains(j)) {
+            if ((filterSelected[0] && j['min_age_limt'] == 18) || (filterSelected[1] && j['min_age_limit'] == 45) || (!(filterSelected[0] || filterSelected[1])))
+              tempSessions.add(j);
+          }
+          else if((filterSelected[3] && j['vaccine'] != "COVAXIN") && tempSessions.contains(j) && !filterSelected[2] && !filterSelected[4])
             tempSessions.remove(j);
 
 
-          if((filterSelected[4] && j['vaccine'] == "SPUTNIK V") && !tempSessions.contains(j))
-            tempSessions.add(j);
-          else if((filterSelected[4] && j['vaccine'] != "SPUTNIK V") && tempSessions.contains(j))
+          if((filterSelected[4] && j['vaccine'] == "SPUTNIK V") && !tempSessions.contains(j)) {
+            if ((filterSelected[0] && j['min_age_limt'] == 18) || (filterSelected[1] && j['min_age_limit'] == 45) || (!(filterSelected[0] || filterSelected[1])))
+              tempSessions.add(j);
+          }
+          else if((filterSelected[4] && j['vaccine'] != "SPUTNIK V") && tempSessions.contains(j) && !filterSelected[2] && !filterSelected[3])
             tempSessions.remove(j);
-
-
-
-
 
         }
         tempAvailability=i;
@@ -338,7 +342,7 @@ class _HomeState extends State<Home> {
                       print("Started Notifications");
                       Fluttertoast.showToast(
                         msg: "You'll be notified of slots in ${districts[selectedDistrict].districtName}",
-                        toastLength: Toast.LENGTH_SHORT,
+                        toastLength: Toast.LENGTH_LONG,
                         gravity: ToastGravity.BOTTOM,
                       );
                       //AndroidAlarmManager.oneShot(const Duration(seconds: 1), 0, )
@@ -349,7 +353,7 @@ class _HomeState extends State<Home> {
                       prefs.setBool('notificationSwitch', false);
                       Fluttertoast.showToast(
                           msg: "Notifications turned off",
-                          toastLength: Toast.LENGTH_SHORT,
+                          toastLength: Toast.LENGTH_LONG,
                           gravity: ToastGravity.BOTTOM,
                       );
                       prefs.setInt('districtID',0);
@@ -449,10 +453,10 @@ class _HomeState extends State<Home> {
               _hasLoadedCenters ? showFilters() : Container(),
               _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),
               _hasLoadedCenters ? Expanded(
-                child: Container(
+                child: filteredAvailabilities.isEmpty? Center(child: Text("No Available Centers", style: TextStyle(fontSize: 15),),) : Container(
                   child: ListView.separated(
                       itemCount: filteredAvailabilities.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 15,),
+                      separatorBuilder: (context, index) => SizedBox(height: 12,),
                       physics: ClampingScrollPhysics(),
                       shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {

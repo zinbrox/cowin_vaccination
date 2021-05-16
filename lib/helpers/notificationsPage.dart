@@ -107,6 +107,7 @@ class LocalNotifyManager {
           "Notifications about Slot Availabilities",
           importance: Importance.max,
           priority: Priority.max,
+          onlyAlertOnce: true,
           styleInformation: BigTextStyleInformation(''),
         );
         var iosChannelSpecifics = IOSNotificationDetails();
