@@ -53,8 +53,9 @@ class _HomeState extends State<Home> {
   List<DistrictAvailability> filteredAvailabilities = [];
 
   bool _loadingStates = true, _hasLoadedCenters=false, notificationSwitch=false;
-  String _value1, _value2;
-  int selectedState, selectedDistrict;
+  String _value1, _value2, _value3; // For displaying DropDownMenu
+  int selectedState, selectedDistrict; // Selected values from DropDownMenu
+  String selectedDose; // Selected Dose number from DropDownMenu
   int numFilters = 0; // Number of Filters added
 
   Future<void> getStates() async {
@@ -126,7 +127,6 @@ class _HomeState extends State<Home> {
           feeType: elements['fee_type'],
           sessions: elements['sessions'],
         );
-
 
       districtAvailabilities.add(districtAvailability);
       }
@@ -279,9 +279,9 @@ class _HomeState extends State<Home> {
             IconButton(
                 icon: notificationSwitch? Icon(Icons.notifications_active) : Icon(Icons.notifications_off),
                 onPressed: () async {
-                  if(selectedDistrict==null && notificationSwitch==false)
+                  if((selectedDistrict==null && notificationSwitch==false)||(selectedDose==null && notificationSwitch==false))
                     Fluttertoast.showToast(
-                        msg: "Please select a district first",
+                        msg: "Please select a district and dose first",
                         toastLength: Toast.LENGTH_LONG,
                         gravity: ToastGravity.BOTTOM,
                         backgroundColor: Colors.white,
@@ -297,6 +297,7 @@ class _HomeState extends State<Home> {
                       prefs.setBool('notificationSwitch', true);
                       prefs.setInt('districtID',
                           districts[selectedDistrict].districtId);
+                      prefs.setString('doseNum', selectedDose);
                       print("Started Notifications");
                       Fluttertoast.showToast(
                         msg: "You'll be notified of slots in ${districts[selectedDistrict].districtName}",
@@ -379,7 +380,6 @@ class _HomeState extends State<Home> {
                   isExpanded: true,
                   value: _value2,
                   hint: Text("Select District", style: TextStyle(fontSize: 20),),
-
                   underline: Container(),
                   items: districts.map<DropdownMenuItem<String>>((var value) {
                     return DropdownMenuItem<String>(
@@ -397,7 +397,29 @@ class _HomeState extends State<Home> {
                   },
                 ),
               ) : Container(),
-              selectedDistrict != null ?
+              selectedDistrict != null ? Container(
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.5,
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: _value3,
+                  hint: Text("Select Dose", style: TextStyle(fontSize: 20),),
+                  underline: Container(),
+                  onChanged: (String newValue){
+                    setState(() {
+                      _value3=newValue;
+                      selectedDose=newValue;
+                    });
+                  },
+                  items: <String>['Dose 1', 'Dose 2'].
+                  map<DropdownMenuItem<String>>((String value){
+                    return DropdownMenuItem<String>(value: value, child: Text(value, style: TextStyle(fontSize: 20),),);
+                  }).toList(),
+                ),
+              ) : Container(),
+              selectedDose != null ?
               ElevatedButton(onPressed: () async {
                for(int i=0;i<filterSelected.length;++i)
                  filterSelected[i]=false;
@@ -436,12 +458,12 @@ class _HomeState extends State<Home> {
                             children: [
                               Text(filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                               SizedBox(height: 10,),
-                              Text("Block: " + filteredAvailabilities[index].blockName),
+                              Text("Block: " + filteredAvailabilities[index].blockName, style: TextStyle(color: Colors.white70),),
                               Text("Fee Type: " +
-                                  filteredAvailabilities[index].feeType),
-                              Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo),
+                                  filteredAvailabilities[index].feeType, style: TextStyle(color: Colors.white70),),
+                              Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo, style: TextStyle(color: Colors.white70),),
                               Text("Address: " +
-                                  filteredAvailabilities[index].centerAddress),
+                                  filteredAvailabilities[index].centerAddress, style: TextStyle(color: Colors.white70),),
                               SizedBox(height: 10,),
                               Divider(thickness: 3,),
                               _returnSessions(filteredAvailabilities[index].sessions),
@@ -475,10 +497,17 @@ class _HomeState extends State<Home> {
                     Text(item[index]['date'], style: TextStyle(fontSize: 20),),
                     Container(
                       width: 40,
-                        child: Text(item[index]['available_capacity'].toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 20),),
+                        child: Text(selectedDose=="Dose 1"? item[index]['available_capacity_dose1'].toString() : item[index]['available_capacity_dose2'].toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 20),),
                       decoration: BoxDecoration(
-                        color: item[index]['available_capacity']>40? Colors.green : item[index]['available_capacity']>0? Colors.yellow[800] : Colors.red,
+                        color: selectedDose=="Dose 1"? item[index]['available_capacity_dose1']>30? Colors.green : item[index]['available_capacity_dose1']>0? Colors.yellow[800] : Colors.red :
+                        item[index]['available_capacity_dose2']>30? Colors.green : item[index]['available_capacity_dose2']>0? Colors.yellow[800] : Colors.red ,
                       ),
+                    ),
+                    Column(
+                      children: [
+                        Text("Dose 1: ${item[index]['available_capacity_dose1']}"),
+                        Text("Dose 2: ${item[index]['available_capacity_dose2']}"),
+                      ],
                     ),
                     Text(item[index]['vaccine']=="COVAXIN"? item[index]['vaccine'] + "      " : item[index]['vaccine'], style: TextStyle(fontSize: 20),),
                     Text(item[index]['min_age_limit'].toString() + "+", style: TextStyle(fontSize: 20),),

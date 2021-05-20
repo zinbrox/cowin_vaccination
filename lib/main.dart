@@ -36,7 +36,7 @@ class _MyAppState extends State<MyApp> {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
-        fontFamily: GoogleFonts.raleway().fontFamily,
+        fontFamily: GoogleFonts.roboto().fontFamily,
         primarySwatch: Colors.deepPurple,
       ),
       themeMode: ThemeMode.dark,
@@ -79,10 +79,10 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 Image(image: AssetImage("assets/SlotNotifierLogo.png"), height: 200,),
                 SizedBox(height: 20,),
-                Text("Slot Notifier", style: TextStyle(fontSize: 30, color: Colors.deepPurple),)
+                Text("Slot Notifier", style: TextStyle(fontSize: 30, color: Colors.white),)
               ],
             )),
-            Text("zinbrox", style: TextStyle(fontSize: 20, decoration: TextDecoration.overline),),
+            Text("zinbrox", style: GoogleFonts.rubik(textStyle: TextStyle(fontSize: 20, decoration: TextDecoration.overline),),),
             SizedBox(height: 20,)
           ],
         ),),

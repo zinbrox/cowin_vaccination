@@ -143,9 +143,11 @@ class LocalNotifyManager {
 
       districtAvailabilities.add(districtAvailability);
     }
+    final doseNum = prefs.getString('doseNum') ?? "Dose 1";
     for(var i in districtAvailabilities)
       for(var j in i.sessions) {
-        if(j['min_age_limit']==18 && j['available_capacity']>0)
+        if(j['min_age_limit']==18)
+          if((doseNum=="Dose 1" && j['available_capacity_dose1']>0) || (doseNum=="Dose 2" && j['available_capacity_dose2']>0))
           if(!filtered.contains(i))
             filtered.add(i);
       }
