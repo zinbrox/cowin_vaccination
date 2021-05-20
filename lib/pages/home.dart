@@ -160,7 +160,7 @@ class _HomeState extends State<Home> {
                     else
                       numFilters--;
                   });
-                  print(filterSelected);
+                  //print(filterSelected);
                   filterChange();
                 },
                 child: Align(
@@ -243,16 +243,16 @@ class _HomeState extends State<Home> {
         newFiltered.add(tempAvailability);
         if((filterSelected[5] && tempAvailability.feeType == "Paid") && !newFiltered.contains(tempAvailability))
           newFiltered.add(tempAvailability);
-        else if((filterSelected[5] && tempAvailability.feeType != "Paid") && newFiltered.contains(tempAvailability))
+        else if((filterSelected[5] && tempAvailability.feeType != "Paid") && newFiltered.contains(tempAvailability) && !filterSelected[6])
           newFiltered.remove(tempAvailability);
         if((filterSelected[6] && tempAvailability.feeType == "Free") && !newFiltered.contains(tempAvailability))
           newFiltered.add(tempAvailability);
-        else if((filterSelected[6] && tempAvailability.feeType != "Free") && newFiltered.contains(tempAvailability))
+        else if((filterSelected[6] && tempAvailability.feeType != "Free") && newFiltered.contains(tempAvailability) && !filterSelected[5])
           newFiltered.remove(tempAvailability);
       }
 
         filteredAvailabilities=newFiltered;
-      print(filteredAvailabilities.length);
+      //print(filteredAvailabilities.length);
       if(numFilters==0)
         filteredAvailabilities=districtAvailabilities;
       setState(() {
@@ -467,7 +467,8 @@ class _HomeState extends State<Home> {
                               width: 1,
                             ),
                           ),
-                          elevation: 1.0,
+                          elevation: 5,
+                          shadowColor: Colors.white,
                           color: Colors.grey[900],
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
