@@ -315,7 +315,7 @@ class _HomeState extends State<Home> {
                           fontSize: 16.0
                       );
                       //AndroidAlarmManager.oneShot(const Duration(seconds: 1), 0, )
-                      AndroidAlarmManager.periodic(const Duration(seconds: 60), 0, callNotification);
+                      AndroidAlarmManager.periodic(const Duration(seconds: 45), 0, callNotification);
                     }
                     else {
                       print("Cancelled Notifications");
@@ -445,7 +445,7 @@ class _HomeState extends State<Home> {
                 child: Text("Search Available Slots", style: TextStyle(fontSize: 20),),
               ) : Container(),
               _hasLoadedCenters ? showFilters() : Container(),
-              _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),
+              _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString(), style: TextStyle(color: Colors.white70),) : Container(),
               _hasLoadedCenters ? Expanded(
                 child: filteredAvailabilities.isEmpty? Center(child: Column(
                   children: [
@@ -453,43 +453,50 @@ class _HomeState extends State<Home> {
                     statusCode==200? Container() : statusCode==400? Text("Error Code 400. Bad Request") : statusCode==401? Text("Error Code 401. Unauthenticated Access") : Text("Error Code 500. Internal Server Error"),
                   ],
                 ),) : Container(
-                  child: ListView.separated(
-                      itemCount: filteredAvailabilities.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 12,),
-                      physics: ClampingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            side: BorderSide(
-                              color: Colors.white12,
-                              width: 1,
+                  child: Scrollbar(
+                    child: ListView.separated(
+                        itemCount: filteredAvailabilities.length,
+                        separatorBuilder: (context, index) => SizedBox(height: 12,),
+                        physics: ClampingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              side: BorderSide(
+                                color: Colors.white12,
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          elevation: 5,
-                          shadowColor: Colors.white,
-                          color: Colors.grey[900],
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-                              SizedBox(height: 10,),
-                              Text("Block: " + filteredAvailabilities[index].blockName, style: TextStyle(color: Colors.white70),),
-                              Text("Fee Type: " +
-                                  filteredAvailabilities[index].feeType, style: TextStyle(color: Colors.white70),),
-                              Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo, style: TextStyle(color: Colors.white70),),
-                              Text("Address: " +
-                                  filteredAvailabilities[index].centerAddress, style: TextStyle(color: Colors.white70),),
-                              SizedBox(height: 10,),
-                              Divider(thickness: 3,),
-                              _returnSessions(filteredAvailabilities[index].sessions),
-                              SizedBox(height: 10,),
-                            ],
-                          ),
-                        );
-                      }),
+                            elevation: 1,
+                            shadowColor: Colors.white,
+                            color: Colors.grey[900],
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    SizedBox(width: 1,),
+                                    Text(filteredAvailabilities[index].centerName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                                  ],
+                                ),
+                                SizedBox(height: 10,),
+                                Text("Block: " + filteredAvailabilities[index].blockName, style: TextStyle(color: Colors.white70),),
+                                Text("Fee Type: " +
+                                    filteredAvailabilities[index].feeType, style: TextStyle(color: Colors.white70),),
+                                Text("Timing: " + filteredAvailabilities[index].timeFrom + " - " + filteredAvailabilities[index].timeTo, style: TextStyle(color: Colors.white70),),
+                                Text("Address: " +
+                                    filteredAvailabilities[index].centerAddress, style: TextStyle(color: Colors.white70),),
+                                SizedBox(height: 10,),
+                                Divider(thickness: 3,),
+                                _returnSessions(filteredAvailabilities[index].sessions),
+                                SizedBox(height: 10,),
+                              ],
+                            ),
+                          );
+                        }),
+                  ),
                 ),
               ) : Container(),
               filteredAvailabilities.length==0 ? Spacer() : Container(),
@@ -520,6 +527,7 @@ class _HomeState extends State<Home> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    SizedBox(),
                     Text(item[index]['date'], style: TextStyle(fontSize: 20),),
                     Container(
                       width: 40,
@@ -531,12 +539,13 @@ class _HomeState extends State<Home> {
                     ),
                     Column(
                       children: [
-                        Text("Dose 1: ${item[index]['available_capacity_dose1']}"),
-                        Text("Dose 2: ${item[index]['available_capacity_dose2']}"),
+                        Text("Dose 1: ${item[index]['available_capacity_dose1']}", style: TextStyle(fontSize: 12),),
+                        Text("Dose 2: ${item[index]['available_capacity_dose2']}", style: TextStyle(fontSize: 12),),
                       ],
                     ),
                     Text(item[index]['vaccine']=="COVAXIN"? item[index]['vaccine'] + "      " : item[index]['vaccine'], style: TextStyle(fontSize: 20),),
                     Text(item[index]['min_age_limit'].toString() + "+", style: TextStyle(fontSize: 20),),
+                    SizedBox(),
                   ],
                 ),
               );

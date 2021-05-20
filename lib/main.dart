@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 Image(image: AssetImage("assets/SlotNotifierLogo.png"), height: 200,),
                 SizedBox(height: 20,),
-                Text("Slot Notifier", style: TextStyle(fontSize: 30, color: Colors.white),)
+                Text("Slot Notifier", style: GoogleFonts.raleway(textStyle: TextStyle(fontSize: 30, color: Colors.white),))
               ],
             )),
             Text("zinbrox", style: GoogleFonts.rubik(textStyle: TextStyle(fontSize: 20, decoration: TextDecoration.overline),),),
