@@ -24,6 +24,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: "Cowin Slot Notifier",
       theme: ThemeData(
         brightness: Brightness.light,
           fontFamily: GoogleFonts.rubik().fontFamily,

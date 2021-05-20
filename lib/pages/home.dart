@@ -4,6 +4,7 @@ import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:cowin_vaccination/helpers/notificationsPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -57,6 +58,7 @@ class _HomeState extends State<Home> {
   int selectedState, selectedDistrict; // Selected values from DropDownMenu
   String selectedDose; // Selected Dose number from DropDownMenu
   int numFilters = 0; // Number of Filters added
+  int statusCode=200;
 
   Future<void> getStates() async {
     print("In getStates");
@@ -114,7 +116,10 @@ class _HomeState extends State<Home> {
     var response = await http.get(Uri.parse(url));
     var jsonData = jsonDecode(response.body);
 
-    for (var elements in jsonData['centers']) {
+    statusCode=response.statusCode;
+
+    if(statusCode==200) {
+      for (var elements in jsonData['centers']) {
         districtAvailability = new DistrictAvailability(
           centerId: elements['center_id'],
           centerName: elements['name'],
@@ -128,8 +133,9 @@ class _HomeState extends State<Home> {
           sessions: elements['sessions'],
         );
 
-      districtAvailabilities.add(districtAvailability);
+        districtAvailabilities.add(districtAvailability);
       }
+    }
      filteredAvailabilities = districtAvailabilities;
       setState(() {
         _hasLoadedCenters=true;
@@ -299,6 +305,7 @@ class _HomeState extends State<Home> {
                           districts[selectedDistrict].districtId);
                       prefs.setString('doseNum', selectedDose);
                       print("Started Notifications");
+                      HapticFeedback.vibrate();
                       Fluttertoast.showToast(
                         msg: "You'll be notified of slots in ${districts[selectedDistrict].districtName}",
                         toastLength: Toast.LENGTH_LONG,
@@ -337,6 +344,7 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              filteredAvailabilities.length==0 ? Spacer() : Container(),
               Container(
                 width: MediaQuery
                     .of(context)
@@ -439,7 +447,12 @@ class _HomeState extends State<Home> {
               _hasLoadedCenters ? showFilters() : Container(),
               _hasLoadedCenters ? Text("Available Centers: " + filteredAvailabilities.length.toString()) : Container(),
               _hasLoadedCenters ? Expanded(
-                child: filteredAvailabilities.isEmpty? Center(child: Text("No Available Centers", style: TextStyle(fontSize: 15),),) : Container(
+                child: filteredAvailabilities.isEmpty? Center(child: Column(
+                  children: [
+                    Text("No Available Centers", style: TextStyle(fontSize: 15),),
+                    statusCode==200? Container() : statusCode==400? Text("Error Code 400. Bad Request") : statusCode==401? Text("Error Code 401. Unauthenticated Access") : Text("Error Code 500. Internal Server Error"),
+                  ],
+                ),) : Container(
                   child: ListView.separated(
                       itemCount: filteredAvailabilities.length,
                       separatorBuilder: (context, index) => SizedBox(height: 12,),
@@ -449,6 +462,10 @@ class _HomeState extends State<Home> {
                         return Card(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
+                            side: BorderSide(
+                              color: Colors.white12,
+                              width: 1,
+                            ),
                           ),
                           elevation: 1.0,
                           color: Colors.grey[900],
@@ -474,7 +491,15 @@ class _HomeState extends State<Home> {
                       }),
                 ),
               ) : Container(),
-
+              filteredAvailabilities.length==0 ? Spacer() : Container(),
+              filteredAvailabilities.length==0 ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.info_outline, color: Colors.white70, size: 20,),
+                  SizedBox(width: 5,),
+                  Text("Click on the Bell Icon to turn on Notifications", style: TextStyle(color: Colors.white70),),
+                ],
+              ) : Container(),
             ],
           ),
         ),
@@ -499,8 +524,8 @@ class _HomeState extends State<Home> {
                       width: 40,
                         child: Text(selectedDose=="Dose 1"? item[index]['available_capacity_dose1'].toString() : item[index]['available_capacity_dose2'].toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 20),),
                       decoration: BoxDecoration(
-                        color: selectedDose=="Dose 1"? item[index]['available_capacity_dose1']>30? Colors.green : item[index]['available_capacity_dose1']>0? Colors.yellow[800] : Colors.red :
-                        item[index]['available_capacity_dose2']>30? Colors.green : item[index]['available_capacity_dose2']>0? Colors.yellow[800] : Colors.red ,
+                        color: selectedDose=="Dose 1"? item[index]['available_capacity_dose1']>25? Colors.green : item[index]['available_capacity_dose1']>0? Colors.yellow[800] : Colors.red :
+                        item[index]['available_capacity_dose2']>25? Colors.green : item[index]['available_capacity_dose2']>0? Colors.yellow[800] : Colors.red ,
                       ),
                     ),
                     Column(
