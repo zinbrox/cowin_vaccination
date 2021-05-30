@@ -82,14 +82,23 @@ class LocalNotifyManager {
         // Sort sessions so the one with most available is at top
         if (filtered.length > 0) {
           for (var i in filtered) {
+            if(doseNum=="Dose 1")
             i.sessions.sort((a, b) =>
-                b['available_capacity'].compareTo(a['available_capacity']));
+                b['available_capacity_dose1'].compareTo(a['available_capacity_dose1']));
+            else
+              i.sessions.sort((a, b) =>
+                  b['available_capacity_dose2'].compareTo(a['available_capacity_dose2']));
           }
+          if(doseNum=="Dose 1")
           filtered.sort((a, b) =>
-              b.sessions[0]['available_capacity'].compareTo(
-                  a.sessions[0]['available_capacity']));
+              b.sessions[0]['available_capacity_dose1'].compareTo(
+                  a.sessions[0]['available_capacity_dose1']));
+          else
+            filtered.sort((a, b) =>
+                b.sessions[0]['available_capacity_dose2'].compareTo(
+                    a.sessions[0]['available_capacity_dose2']));
 
-          capacity = filtered[0].sessions[0]['available_capacity'];
+          capacity = doseNum=="Dose 1"? filtered[0].sessions[0]['available_capacity_dose1'] : filtered[0].sessions[0]['available_capacity_dose2'] ;
           vaccine = filtered[0].sessions[0]['vaccine'];
           center = filtered[0].centerName;
 
@@ -106,6 +115,7 @@ class LocalNotifyManager {
 
 
   List<DistrictAvailability> districtAvailabilities = [];
+  String doseNum;
 
 
   Future<List<DistrictAvailability>> getAvailabilities() async {
@@ -143,7 +153,8 @@ class LocalNotifyManager {
 
       districtAvailabilities.add(districtAvailability);
     }
-    final doseNum = prefs.getString('doseNum') ?? "Dose 1";
+    doseNum = prefs.getString('doseNum') ?? "Dose 1";
+    print(doseNum);
     for(var i in districtAvailabilities)
       for(var j in i.sessions) {
         if(j['min_age_limit']==18)
