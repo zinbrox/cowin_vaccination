@@ -1,6 +1,6 @@
 # cowin_vaccination
 
-An application to see available slots in cowin.
+An Flutter app to see available slots in vaccine slots from cowin portal and get notified of when slots are available in your district.
 
 ## Getting Started
 
