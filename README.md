@@ -1,4 +1,4 @@
-# cowin_vaccination
+# Cowin Slot Notifier
 
 ### An Flutter app to see available slots in vaccine slots from cowin portal and get notified of when slots are available in your district.
 Download on the Google Play Store: https://play.google.com/store/apps/details?id=com.zinbrox.cowin_vaccination  
